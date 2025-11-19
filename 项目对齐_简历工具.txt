@@ -1,0 +1,120 @@
+标题：项目对齐文档（简历生成与岗位匹配系统）
+日期：2025-11-03
+存放：当前目录
+
+一、产品目标
+- 输入到Agent：用户提供自由文本 + 结构化字段（学校、工作经历、课程、技能等）。
+- 信息增强：识别实体（如“UNSW”“COMP9434”），通过联网检索补全课程主题/技能标签，用于更精准匹配和简历生成。
+- 岗位搜索：使用提供的 API Key（GPT）进行联网搜索，聚焦 Seek 与 LinkedIn 的岗位信息（无官方API时以合规检索为主）。
+- 匹配评分：将用户画像与岗位 JD 匹配并打分，给出理由/差距/建议。
+- 简历生成：先生成英文总简历（Master），再按岗位生成定制简历（Per‑JD）。
+- 预览与下载：在线 HTML 预览；按需生成 DOCX/PDF 并下载，避免内存和存储压力（优先 DOCX）。
+- 岗位链接：每条岗位返回可点击的原站 JD 链接（jd_url）。
+
+二、用户流程
+1) 信息提交：用户输入自由描述与表单（教育/经历/课程/技能）。
+2) 画像分析：解析并结构化，课程联网增强（示例：识别“UNSW COMP9434”，检索官方资料，提取“机器人软件架构”等主题与对应技能/工具，如 ROS、行为树等）。
+3) 首批搜索：检索并返回 100 条岗位（Seek 50 + LinkedIn 50；若某源不足，另一源补齐到 100）。
+4) 结果审阅：用户筛选/收藏/排除；可通过 jd_url 查看原始 JD。
+5) 下一批：若不满意，拉取新的 100 条岗位，保证与上一批不重合。
+6) 简历生成：生成英文总简历 → 选择岗位 → 生成每岗定制简历 → 在线预览 → 选择性下载（单个或批量）。
+
+三、架构设计
+- 前端小部件（可嵌入网页）：采集输入、展示岗位、预览简历、触发下载。
+- 后端服务：
+  · Profile 分析与课程增强
+  · Job 搜索适配器（Seek、LinkedIn）
+  · JD 拉取解析
+  · Matching 匹配引擎
+  · Resume 渲染与导出（HTML/MD → DOCX/PDF）
+  · Agent 编排（工具化调用与步骤管理）
+- 缓存与存储：搜索与 JD 结果短 TTL 缓存；用户隐私信息最小化存储。
+
+四、模块与接口（核心）
+- POST /analyze-profile：自由文本+表单 → 标准化 Profile（含课程增强、技能归一化、关键词）
+- POST /search-jobs：入参含 Profile/Query、sources=["seek","linkedin"], allocation={seek:50,linkedin:50}, limit=100, exclude_hashes? → jobs[] + seen_hashes[] + 统计
+- POST /next-batch：session_id, exclude_hashes, same_query? → 新的 100 条不重合岗位
+- POST /fetch-jd：jd_url → 解析后的 JD（职责/要求/关键词）
+- POST /match：profile + jd → score(0–100), reasons[], gaps[], recommendations[]
+- POST /generate-resume-preview：profile + 可选 jd + template_id → html 预览
+- POST /generate-resume-file：同上 → DOCX/PDF 文件流或短时链接
+- POST /generate-resumes-batch：选中岗位 → task_id；GET /tasks/{task_id} → zip 下载链接
+
+五、数据模型（精简）
+- Company：id, name, industry?, location?, website?, careers_url?, tags[]
+- Job：id, hash, source, title, company, location, remote?, jd_url, posted_at, keywords[]
+- Profile：name, contacts, location?, education[], experience[], projects[], skills[], courses[], languages[], target_roles[], locations[]
+- Match：job_id, score, reasons[], gaps[], recommendations[]
+
+六、Agent 工具链
+- web_search：课程/学历增强（优先官网/课程手册/大纲）
+- course_catalog：从课程代码/标题抽取主题/技能/工具
+- skills_mapper：技能同义词归一化到标准词表
+- jd_search：Seek/LinkedIn 适配器（分页、限频、重试）
+- jd_fetch_parse：抓取 JD 文本并解析提炼字段
+- matcher：关键词/语义加权评分并产出可解释理由
+- resume_renderer：生成 Master 和 Per‑JD 简历（HTML/MD → DOCX/PDF）
+
+七、批次与去重策略
+- 分配：目标 Seek 50 + LinkedIn 50；如某源不足，另一源补齐到 100。
+- 去重：规范化键 lower(title)|lower(company)|norm_location|canonical_url → 哈希去重。
+- 第二批不重合：维护会话级 seen set；通过 exclude_hashes 提供排除列表，确保两批不重叠。
+- 稳健性：限流、重试、分页、缓存，尽量保证每批 100 条。
+
+八、预览与下载策略
+- 在线预览：仅返回 HTML（iframe 渲染），不批量生成文件。
+- 选择性下载：点击下载时即时生成 DOCX（优先）/PDF（可选），流返回或短时链接。
+- 批量下载：仅对用户勾选岗位生成，走任务队列，完成后 zip 下载；临时存储短 TTL。
+- 内存友好：分页岗位、按需渲染、缓存 HTML，不长期缓存大文件。
+
+九、模板（英文）
+- resume-ats-en：极简、结构清晰、ATS 友好。
+- resume-visual-en：轻量视觉风格，仍保证可解析。
+- 两阶段：
+  · Master：汇总画像，关键词规范化。
+  · Per‑JD：根据 JD 重写摘要与经历顺序、对齐关键词、突出课程衍生技能（例：Robotics/Behavior Trees/ROS）。
+
+十、隐私与合规
+- API Key：仅后端保存，不下发前端；通过配置安全读取。
+- PII：日志脱敏、最小化保存、缓存设 TTL（可配置）。
+- 来源合规：优先官方/授权 API；无官方 API 时，使用 GPT API 进行联网检索并遵从站点条款与合理限频。
+
+十一、目录结构（建议）
+config/（环境与密钥样例）
+data/（样例数据）
+docs/（规格、流程、字段说明）
+apps/
+  api/（FastAPI 路由聚合）
+  ui/（嵌入式前端）
+modules/
+  profile/（画像与课程增强）
+  jobs/（搜索与去重；seek/linkedin 适配器）
+  jd/（JD 抓取与解析）
+  matching/（匹配与解释）
+  resume/（渲染与导出）
+  agent/（编排与工具封装）
+  shared/（配置、缓存、工具、类型）
+templates/
+  resume-ats-en/
+  resume-visual-en/
+exporters/（PDF/DOCX 导出器）
+scripts/（批处理脚本）
+tests/（单测与集成测试）
+
+十二、已确认决策（含你的最新要求）
+- 地区：默认 AU（澳大利亚），远程与城市由用户输入决定。
+- 级别：不预设 Graduate/Junior 等优先级；用户输入为准，由匹配自动判断。
+- 数据源：Seek + LinkedIn（各 50 / 批，共 100）。
+- 第二批：若不满意，再给全新 100 条，与前一批不重合。
+- 导出优先级：DOCX 优先；PDF 作为可选。
+- 临时文件：保留时间 15 分钟（TTL）。
+- 接入方式：暂无线上官方 API；使用提供的 GPT API Key 进行联网检索与聚合。
+- 预览下载：在线预览 + 选择性下载。
+- 岗位链接：返回并展示 jd_url。
+
+十三、待补充/可配置项
+- 批量 zip 最大份数：建议 ≤ 100（与单批规模一致）。
+- 临时链接实现：预签名 URL 或一次性 Token，有效期 15 分钟。
+- 缓存策略：课程增强结果可缓存更久（如 7 天）；岗位与 JD 短 TTL（如 15–60 分钟）。
+
+—— 文档结束 ——

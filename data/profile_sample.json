@@ -1,0 +1,5 @@
+{
+  "free_text": "UNSW student, took COMP9434, interested in robotics software.",
+  "skills": ["Python", "C++", "ROS"],
+  "courses": [{"code": "COMP9434", "name": "Robotics Software Architectures"}]
+}
