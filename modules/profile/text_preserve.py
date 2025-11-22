@@ -12,7 +12,15 @@ def parse_text_preserve(text: str) -> Tuple[Dict[str, Any], str]:
     - Maps degree/major, date ranges, company/role
     - Merges bracket-split lines like "(Python" + "TensorFlow)"
     """
-    lines = [ln.strip() for ln in (text or "").splitlines() if (ln or "").strip()]
+    raw_lines = [ln.strip() for ln in (text or "").splitlines() if (ln or "").strip()]
+    lines: List[str] = []
+    for ln in raw_lines:
+        normalized = re.sub(r"[\ufffd\uF0B7\u00B7]+", "•", ln)
+        if normalized.count("•") >= 2 and normalized.strip().startswith("•"):
+            parts = [p.strip() for p in re.split(r"\s*•\s+", normalized) if p.strip()]
+            lines.extend([f"• {p}" for p in parts])
+        else:
+            lines.append(normalized)
     if not lines:
         return {}, ""
 
@@ -23,7 +31,7 @@ def parse_text_preserve(text: str) -> Tuple[Dict[str, Any], str]:
 
     hdr_alias = {
         "education": {"education"},
-        "experience": {"experience", "work experience"},
+        "experience": {"experience", "work experience", "employment history"},
         "projects": {"projects", "project"},
         "skills": {"skills", "skill"},
         "languages": {"languages", "language"},
@@ -41,7 +49,7 @@ def parse_text_preserve(text: str) -> Tuple[Dict[str, Any], str]:
     bucket: Dict[str, List[str]] = {k: [] for k in hdr_alias}
     preamble: List[str] = []
     current: str | None = None
-    header_re = re.compile(r"^(?P<h>education|experience|work\s+experience|projects|skills|languages|certifications|certificates)\s*[:：]?\s*(?P<rest>.*)$", re.I)
+    header_re = re.compile(r"^(?P<h>education|experience|work\s+experience|employment\s+history|projects|skills|languages|certifications|certificates)\s*[:：]?\s*(?P<rest>.*)$", re.I)
     for ln in lines:
         m = header_re.match(ln)
         if m:
@@ -65,11 +73,13 @@ def parse_text_preserve(text: str) -> Tuple[Dict[str, Any], str]:
     EMAIL_RE = re.compile(r"[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}")
     PHONE_RE = re.compile(r"\+?\d[\d\-\s()]{6,}")
 
+    BULLET_LEAD = re.compile(r"^\s*[\-•·\*—–\u2022\u2023\u25AA\u25CF\u25C6\u00B7]+\s+")
+
     def is_bullet(s: str) -> bool:
-        return bool(re.match(r"^\s*[\-•·\*—–]\s+", s))
+        return bool(BULLET_LEAD.match(s))
 
     def clean_bullet(s: str) -> str:
-        return re.sub(r"^\s*[\-•·\*—–]\s+", "", s).strip()
+        return BULLET_LEAD.sub("", s, count=1).strip()
 
     def is_year_token(s: str) -> bool:
         return bool(re.fullmatch(r"\d{4}", s))
@@ -129,10 +139,16 @@ def parse_text_preserve(text: str) -> Tuple[Dict[str, Any], str]:
     location: str | None = None
     contact_parts: List[str] = []
     contact_seen: set[str] = set()
+    summary_lines: List[str] = []
+
+    NAME_STOP_WORDS = {"professional summary", "summary", "profile", "career objective"}
 
     def maybe_add_contact(part: str, key: str | None = None):
         part_clean = re.sub(r"\s+", " ", (part or "").strip().strip('|•·-'))
         if not part_clean:
+            return
+        # avoid lone years or short tokens like "2023"
+        if part_clean.isdigit() and len(part_clean) <= 4:
             return
         k = key or part_clean.lower()
         if k in contact_seen:
@@ -148,31 +164,42 @@ def parse_text_preserve(text: str) -> Tuple[Dict[str, Any], str]:
         segments = [seg.strip() for seg in re.split(r"[|•·]", text_line) if seg.strip()]
         if not segments:
             segments = [text_line]
+        consumed_line = False
         for seg in segments:
             if not name:
-                # Candidate name: alphabetic words, short, no @
+                # Candidate name: alphabetic words, short, no @, skip known headers
                 if EMAIL_RE.search(seg):
                     continue
                 seg_simple = re.sub(r"\s+", " ", seg)
-                if re.fullmatch(r"[A-Za-z][A-Za-z\s\.\-]{1,60}", seg_simple):
-                    name = seg_simple.strip()
+                seg_norm = seg_simple.strip()
+                seg_lower = seg_norm.lower()
+                if seg_lower not in NAME_STOP_WORDS and re.fullmatch(r"[A-Za-z][A-Za-z0-9\s\.\-\(\)]{1,80}", seg_norm):
+                    name = seg_norm
+                    consumed_line = True
                     continue
+            matched_contact = False
             email_match = EMAIL_RE.search(seg)
             if email_match:
                 maybe_add_contact(email_match.group(0))
-                continue
+                matched_contact = True
             phone_match = PHONE_RE.search(seg)
             if phone_match:
                 digits = re.sub(r"\D", "", phone_match.group(0))
                 maybe_add_contact(phone_match.group(0), key=digits or None)
+                matched_contact = True
+            if matched_contact:
+                consumed_line = True
                 continue
             if not location:
-                if re.search(r"(?i)(street|st\.|st,|sydney|nsw|road|rd\.|australia|auckland|new zealand)", seg):
-                    location = seg.replace("Address:", "").strip()
+                if re.search(r"(?i)\b(street|st\.|road|rd\.|address|suite|floor|unit|apt|avenue|ave\.)\b", seg) or re.match(r"^\s*\d{1,4}\s+[A-Za-z]", seg):
+                    cleaned = seg.replace("Address:", "").strip()
+                    location = cleaned
+                    consumed_line = True
                     continue
             # capture remaining meaningful pieces (e.g., address line)
-            if re.search(r"\d", seg) and any(ch.isalpha() for ch in seg) and not location:
-                location = seg.strip()
+            # intentionally skip generic digit-only lines to avoid misclassifying summary sentences
+        if not consumed_line and norm_header(text_line) not in NAME_STOP_WORDS:
+            summary_lines.append(text_line)
 
     # Education
     edu: List[Dict[str, Any]] = []
@@ -443,6 +470,7 @@ def parse_text_preserve(text: str) -> Tuple[Dict[str, Any], str]:
         "name": name,
         "contact": contact_str,
         "location": location,
+        "summary": " ".join(summary_lines).strip() or None,
         "education": edu + edu_from_projects,
         "experience": exp + moved_to_exp,
         "projects": projects,

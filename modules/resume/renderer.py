@@ -125,19 +125,22 @@ def render_html(input: RenderInput) -> RenderOutput:
 
     highlights = collect_highlights()
 
+    base_summary = (getattr(profile, "summary", None) or "").strip()
+    job_summary = ""
+
     if getattr(input, 'preserve', False):
         if jd is None:
-            summary = "概要聚焦现有技能与经历，突出跨学科协作与交付能力。"
+            job_summary = "概要聚焦现有技能与经历，突出跨学科协作与交付能力。"
         else:
             job_title = getattr(jd, "title", None) or "目标岗位"
             mk = ", ".join(matched_skills[:4]) if matched_skills else None
             highlight_text = f" 亮点案例：{'；'.join(highlights)}。" if highlights else ""
-            summary = f"针对 {job_title} 的精简概要，强化{(' ' + mk + ' 等核心技能') if mk else ' 岗位匹配度'}。{highlight_text}"
+            job_summary = f"针对 {job_title} 的精简概要，强化{(' ' + mk + ' 等核心技能') if mk else ' 岗位匹配度'}。{highlight_text}"
     else:
         if jd is None:
             general_skills = ", ".join(profile.skills[:6]) if profile.skills else "工程实践"
             highlight_text = f" 代表项目：{'；'.join(highlights)}。" if highlights else ""
-            summary = f"具备 {general_skills} 相关经验，能够在快速节奏中完成端到端交付。{highlight_text}"
+            job_summary = f"具备 {general_skills} 相关经验，能够在快速节奏中完成端到端交付。{highlight_text}"
         else:
             job_title = getattr(jd, "title", None) or "目标岗位"
             company = getattr(jd, "company", None)
@@ -148,7 +151,11 @@ def render_html(input: RenderInput) -> RenderOutput:
                 else "突出岗位所需能力"
             )
             highlight_text = f" 代表项目：{'；'.join(highlights)}。" if highlights else ""
-            summary = f"{head} 的定制概述：{skill_clause}，并结合实践经验呈现落地成效。{highlight_text}"
+            job_summary = f"{head} 的定制概述：{skill_clause}，并结合实践经验呈现落地成效。{highlight_text}"
+
+    summary = job_summary
+    if base_summary:
+        summary = base_summary if not job_summary else f"{base_summary} {job_summary}".strip()
 
     # If refiner produced a summary, prefer it
     if refined_summary:

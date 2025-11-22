@@ -52,7 +52,7 @@ def strict_map_profile(profile: Profile, *, timeout: float = 45.0, model: str | 
                     {"role": "system", "content": SYSTEM},
                     {"role": "user", "content": user},
                 ],
-                temperature=0.1,
+                temperature=1,
                 timeout=timeout,
             )
             text = chat.choices[0].message.content or ""
