@@ -30,6 +30,7 @@ class Profile(BaseModel):
     name: Optional[str] = None
     contact: Optional[str] = None
     location: Optional[str] = None
+    summary: Optional[str] = None
     education: List[Education] = []
     experience: List[Experience] = []
     projects: List[Experience] = []

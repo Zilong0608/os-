@@ -2,6 +2,8 @@
   const $ = (selector) => document.querySelector(selector);
   const $$ = (selector) => Array.from(document.querySelectorAll(selector));
   const apiBase = () => $('#apiBase').value.trim().replace(/\/$/, '');
+  const escapeHtml = (str = '') =>
+    String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 
   const state = {
     es: null,
@@ -169,6 +171,12 @@
     const education = profile.education || [];
     const experience = profile.experience || [];
     const courses = profile.courses || [];
+    const summaryBlock = profile.summary
+      ? `<div>
+            <h3>个人简介</h3>
+            <p>${escapeHtml(profile.summary)}</p>
+          </div>`
+      : '';
 
     const skillHtml = skills.length
       ? `<div class="chips">${skills.map((s) => `<span class="chip">${s}</span>`).join('')}</div>`
@@ -223,6 +231,7 @@
           <div><strong>地点：</strong>${profile.location || '—'}</div>
         </div>
       </div>
+      ${summaryBlock}
       <div>
         <h3>技能 (${skills.length})</h3>
         ${skillHtml}
