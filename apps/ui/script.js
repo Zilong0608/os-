@@ -12,6 +12,7 @@
     jobs: [],
     es: null,
     currentJD: null,
+    sessionId: null, // 用于跟踪当前搜索会话
   };
 
   // ============================================
@@ -215,16 +216,27 @@
   // ============================================
   // STEP 3: SEARCH
   // ============================================
-  async function startJobSearch() {
+  async function startJobSearch(isContinue = false) {
     const title = $('#titles').value.trim();
     if (!title) { showToast('请输入职位'); return; }
 
     const jobsEl = $('#jobs');
     const progress = $('#progress');
-    const btn = $('#startStream');
+    const startBtn = $('#startStream');
+    const continueBtn = $('#continueStream');
     
-    btn.disabled = true;
-    jobsEl.innerHTML = '';
+    // 如果是新搜索，生成新的 session_id 并清空结果
+    if (!isContinue) {
+      state.sessionId = 'search-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+      state.jobs = [];
+      jobsEl.innerHTML = '';
+      console.log('🆕 新搜索会话:', state.sessionId);
+    } else {
+      console.log('🔄 继续搜索会话:', state.sessionId);
+    }
+    
+    startBtn.disabled = true;
+    continueBtn.disabled = true;
     progress.innerHTML = '<div class="spinner"></div><span>正在为您实时检索...</span>';
 
     const linkedinValue = parseInt($('#linkedinCount').value) || 0;
@@ -235,10 +247,14 @@
       titles: title, 
       linkedin: linkedinValue, 
       seek: seekValue, 
-      limit: limitValue 
+      limit: limitValue,
+      isContinue: isContinue,
+      sessionId: state.sessionId,
+      excludeCount: state.jobs.length
     });
 
     const params = new URLSearchParams({
+      session_id: state.sessionId || '',
       titles: title,
       locations: $('#locations').value || 'AU',
       limit: limitValue,
@@ -252,6 +268,10 @@
 
     es.addEventListener('job', (e) => {
       const job = JSON.parse(e.data);
+      
+      // 将职位添加到 state.jobs
+      state.jobs.push(job);
+      
       const card = document.createElement('div');
       card.className = 'job-card-premium';
       const sourceLabel = job.source === 'seek' ? 'Seek' : 'LinkedIn';
@@ -279,12 +299,14 @@
 
     es.addEventListener('end', () => { 
       es.close(); 
-      btn.disabled = false; 
-      progress.innerHTML = '<span>搜索完成 ✓</span>'; 
+      startBtn.disabled = false; 
+      continueBtn.disabled = false;
+      progress.innerHTML = `<span>搜索完成 ✓ (已显示 ${state.jobs.length} 个职位)</span>`; 
     });
     es.onerror = () => { 
       es.close(); 
-      btn.disabled = false; 
+      startBtn.disabled = false; 
+      continueBtn.disabled = false;
       progress.innerHTML = '<span>搜索异常，请刷新重试</span>';
     };
   }
@@ -420,7 +442,8 @@
 
     $('#analyzeProfile')?.addEventListener('click', analyzeProfile);
     $('#roleRecommendBtn')?.addEventListener('click', recommendRoles);
-    $('#startStream')?.addEventListener('click', startJobSearch);
+    $('#startStream')?.addEventListener('click', () => startJobSearch(false));
+    $('#continueStream')?.addEventListener('click', () => startJobSearch(true));
     
     $('#closeProfileCard')?.addEventListener('click', () => $('#profileResultCard').classList.remove('show'));
     
