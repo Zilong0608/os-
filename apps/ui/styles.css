@@ -288,15 +288,87 @@ input:focus { border-color: var(--accent-light); background: white; outline: non
   100% { transform: rotate(360deg); }
 }
 
-/* 导航箭头 */
-.nav-btn {
-  position: fixed; top: 55%; width: 62px; height: 62px; background: white; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center; z-index: 500; cursor: pointer;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.02); transition: 0.4s;
+/* ============================================
+   PREMIUM BUTTONS & INTERACTION
+   ============================================ */
+.btn { 
+  padding: 8px 18px; 
+  border-radius: 40px; 
+  font-weight: 500; 
+  font-size: 13px; 
+  cursor: pointer; 
+  border: 1px solid transparent; 
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+  display: inline-flex; 
+  align-items: center; 
+  gap: 6px;
+  user-select: none;
 }
-.nav-btn:hover { transform: scale(1.1); box-shadow: 0 15px 35px rgba(0,0,0,0.1); }
-.nav-btn.left { left: 40px; }
-.nav-btn.right { right: 40px; }
+
+/* 小巧版按钮 (用于编辑、收起、停止等) */
+.btn.small {
+  padding: 5px 12px;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+}
+
+.btn.primary { background: var(--accent); color: white; padding: 15px 35px; border-radius: 16px; font-size: 15px; }
+
+/* 轮廓风格 (用于次要操作) */
+.btn.outline { 
+  background: rgba(255, 255, 255, 0.6); 
+  border: 1px solid rgba(0,0,0,0.08); 
+  color: var(--accent);
+}
+
+.btn.ghost {
+  background: transparent;
+  border: 1px solid rgba(0,0,0,0.06);
+  color: var(--accent-light);
+}
+
+/* 交互反馈：光暗小变化 */
+.btn:hover {
+  transform: translateY(-1.5px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.btn.primary:hover {
+  filter: brightness(1.1);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+  background: var(--accent); /* 保持主色 */
+}
+
+.btn:active {
+  transform: translateY(0);
+  filter: brightness(0.9);
+}
+
+/* 针对 Step 4 特殊处理 */
+.resume-header-row .button-row .btn {
+  background: white;
+  border: 1px solid #e1e1e6;
+  font-size: 12px;
+  color: #333;
+}
+
+/* 导航箭头样式优化 */
+.nav-btn {
+  position: fixed; top: 50%; width: 54px; height: 54px; background: white; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; z-index: 500; cursor: pointer;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.06); border: 1px solid rgba(0,0,0,0.03); 
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  color: var(--accent);
+}
+.nav-btn:hover { 
+  transform: translateY(-50%) scale(1.1); 
+  background: var(--accent);
+  color: white;
+  box-shadow: 0 15px 35px rgba(0,0,0,0.15); 
+}
+.nav-btn.left { left: 30px; transform: translateY(-50%); }
+.nav-btn.right { right: 30px; transform: translateY(-50%); }
 
 /* 细节组件 */
 textarea { 
@@ -309,7 +381,3 @@ textarea {
   border: 1.5px dashed var(--accent-soft); border-radius: 22px; padding: 30px; 
   background: rgba(255,255,255,0.35); cursor: pointer; 
 }
-.btn.outline { 
-  background: rgba(255,255,255,0.6); border: 1px solid rgba(0,0,0,0.08); 
-}
-.btn.primary { background: var(--accent); color: white; padding: 15px 35px; border-radius: 16px; font-size: 15px; }
