@@ -39,6 +39,10 @@ def stream_get(
     linkedin: int = Query(default=5, ge=0, le=50),
     limit: int = Query(default=10, ge=1, le=100),
 ):
+    import logging
+    logger = logging.getLogger("jobs.router")
+    logger.info(f"🔍 收到搜索请求 - LinkedIn: {linkedin}, Seek: {seek}, Limit: {limit}, Titles: {titles}")
+    
     input = SearchJobsInput(
         session_id=session_id or None,
         query=JobQuery(titles=_csv(titles), keywords=_csv(keywords), locations=_csv(locations)),
@@ -46,5 +50,7 @@ def stream_get(
         limit=limit,
         exclude_hashes=[],
     )
+    
+    logger.info(f"📊 分配策略: {input.allocation}")
     generator = stream_jobs(input)
     return StreamingResponse(generator, media_type="text/event-stream")

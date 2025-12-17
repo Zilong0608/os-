@@ -3,159 +3,228 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>简历画像与职位匹配控制台</title>
+    <title>Mirror Studio - CVfor1</title>
     <link rel="icon" href="data:," />
-    <link rel="stylesheet" href="styles.css?v=10" />
+    <link rel="stylesheet" href="styles.css?v=12" />
+    <!-- 引入高级字体 -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@1,400;1,700;1,900&family=Great+Vibes&display=swap" rel="stylesheet">
   </head>
   <body>
     <header class="hero">
       <div class="hero__primary">
-        <span class="badge hero__badge">AI Career Studio</span>
-        <h1>智能画像 · 岗位匹配 · 定制简历</h1>
-        <p class="subtitle">
-          一次输入即可完成画像结构化、岗位智能匹配与定制简历生成，为候选人提供高品质求职体验。
-        </p>
-      </div>
-      <div class="hero__visual">
-        <div class="orb orb--primary"></div>
-        <div class="orb orb--secondary"></div>
-        <div class="matrix"></div>
+        <div class="brand">MirrorStudio</div>
+        <h1>CVfoR1</h1>
       </div>
     </header>
 
-    <section id="advancedSettings" class="panel advanced hidden glass">
-      <div class="panel-title compact">
-        <h2>高级设置</h2>
-        <span class="muted">仅限内部调试使用</span>
+    <!-- 隐藏的配置（仅代码保留，UI完全移除） -->
+    <div style="display: none;">
+      <input id="apiBase" value="" />
+      <input id="sessionId" value="demo-session-001" />
+    </div>
+
+    <!-- 对称的双向浮动导航 -->
+    <button class="nav-btn left" id="floatingBackBtn" style="display: none;">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+        <polyline points="15 18 9 12 15 6"></polyline>
+      </svg>
+    </button>
+    
+    <button class="nav-btn right" id="floatingNextBtn" style="display: none;">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+        <polyline points="9 18 15 12 9 6"></polyline>
+      </svg>
+    </button>
+
+    <main class="carousel-container">
+      <div class="carousel-track" id="carouselTrack">
+        
+        <!-- Step 0: 起始页 -->
+        <section class="carousel-card active" data-step="0" id="step-landing">
+          <div class="landing-content">
+            <div class="main-logo">WhiteMirror | CVfoR1</div>
+            <p class="landing-slogan">开启你的职场镜像探索之旅</p>
+            <button id="startJourney" class="btn primary premium-btn">
+              <span>通往探索之路</span>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
+            </button>
+          </div>
+        </section>
+
+        <!-- Step 1: 画像分析 -->
+        <section class="carousel-card" data-step="1" id="step-profile">
+          <div class="card-inner">
+            <div class="card-header">
+              <span class="badge">STEP 1</span>
+              <h2>画像构建</h2>
+              <button id="clearProfile" class="btn ghost small">清空</button>
+            </div>
+            
+            <div class="card-body">
+              <div class="profile-input-container">
+                <div class="input-section">
+                  <div class="section-label">自然语言输入</div>
+                  <textarea id="freeText" placeholder="在此输入或粘贴你的经历描述，AI 将自动提取关键画像信息..."></textarea>
+                </div>
+
+                <div class="input-divider">
+                  <span class="line"></span>
+                  <span class="text">或者</span>
+                  <span class="line"></span>
+                </div>
+
+                <div class="input-section">
+                  <div class="section-label">简历文件解析</div>
+                  <label id="dropzone" class="dropzone-premium">
+                    <div class="dropzone-main">
+                      <div class="icon-box">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                          <polyline points="14 2 14 8 20 8"></polyline>
+                          <line x1="12" y1="18" x2="12" y2="12"></line>
+                          <polyline points="9 15 12 12 15 15"></polyline>
+                        </svg>
+                      </div>
+                      <div class="text-box">
+                        <strong id="dropzoneText">选择或拖拽简历</strong>
+                        <span>支持 PDF, DOCX, HTML</span>
+                      </div>
+                    </div>
+                    <input type="file" id="resumeFile" accept=".pdf,.doc,.docx,.html" />
+                  </label>
+                </div>
+
+                <div class="button-action-row">
+                  <button id="analyzeProfile" class="btn primary large">
+                    <span>启动画像分析</span>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                  </button>
+                  <div id="analyzeStatus" class="status-indicator">就绪</div>
+                </div>
+              </div>
+            </div> <!-- 结束 card-body -->
+
+            <!-- 画像结果卡片 (从底部平滑滑入) -->
+            <div id="profileResultCard" class="profile-result-card">
+              <div class="card-header">
+                <h2>个人画像详情</h2>
+                <div class="card-actions">
+                  <button id="editProfileInCard" class="btn outline small">编辑</button>
+                  <button class="btn ghost small" id="closeProfileCard">收起</button>
+                </div>
+              </div>
+              <div class="card-body" id="profileResultContent">
+                <!-- 内容动态注入 -->
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Step 2: 岗位推荐 -->
+        <section class="carousel-card" data-step="2" id="step-recommend">
+          <div class="card-inner">
+            <div class="card-header">
+              <span class="badge">STEP 2</span>
+              <h2>智能岗位推荐</h2>
+            </div>
+            <div class="card-body">
+              <div class="button-row">
+                <button id="roleRecommendBtn" class="btn primary">开始推荐</button>
+                <span id="roleRecommendStatus"></span>
+              </div>
+              <div id="roleRecommendations" class="recommendations-area">
+                <p class="placeholder">点击“开始推荐”获取智能匹配结果</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Step 3: 岗位搜索 -->
+        <section class="carousel-card" data-step="3" id="step-search">
+          <div class="card-inner">
+            <div class="card-header">
+              <span class="badge">STEP 3</span>
+              <h2>精准职位检索</h2>
+            </div>
+            <div class="card-body">
+              <div class="search-form">
+                <!-- 第一行：核心搜索词 -->
+                <div class="form-row main-fields">
+                  <div class="input-group">
+                    <span class="field-label">职位标题</span>
+                    <input id="titles" placeholder="例如：Software Engineer" />
+                  </div>
+                  <div class="input-group">
+                    <span class="field-label">地区</span>
+                    <input id="locations" value="AU" />
+                  </div>
+                </div>
+
+                <!-- 第二行：源控制（对齐的方框） -->
+                <div class="form-row settings-fields">
+                  <div class="input-group small">
+                    <span class="field-label">LinkedIn 数量</span>
+                    <input id="linkedinCount" type="number" value="5" min="0" />
+                  </div>
+                  <div class="input-group small">
+                    <span class="field-label">Seek 数量</span>
+                    <input id="seekCount" type="number" value="5" min="0" />
+                  </div>
+                  <div class="input-group small">
+                    <span class="field-label">结果总数限制</span>
+                    <input id="totalLimit" type="number" value="10" min="1" />
+                  </div>
+                </div>
+              </div>
+
+              <div class="button-row">
+                <button id="startStream" class="btn primary">开始检索</button>
+                <button id="stopStream" class="btn ghost">停止</button>
+                <span id="progress" class="status-indicator">就绪</span>
+              </div>
+              
+              <div id="jobs" class="job-list scrollable">
+                <p class="placeholder">实时岗位卡片将在此列出</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Step 4: 简历预览 -->
+        <section class="carousel-card" data-step="4" id="step-resume">
+          <div class="card-inner">
+            <div class="card-header">
+              <span class="badge">STEP 4</span>
+              <h2>简历匹配生成</h2>
+            </div>
+            <div class="card-body">
+              <div class="resume-header-row">
+                <div class="button-row">
+                  <button id="editResume" class="btn outline" disabled>编辑</button>
+                  <button id="downloadDocx" class="btn outline">DOCX</button>
+                  <button id="downloadPdf" class="btn outline">PDF</button>
+                </div>
+              </div>
+              
+              <div id="matchResult" class="match-result">
+                <div style="grid-column: 1 / -1; text-align: center; color: var(--text-sub);">
+                  选择 Step 3 中的职位以进行精准匹配预览
+                </div>
+              </div>
+              
+              <iframe id="preview" title="预览" loading="lazy"></iframe>
+            </div>
+          </div>
+        </section>
       </div>
-      <div class="advanced__grid">
-        <label>
-          <span>API Base</span>
-          <input id="apiBase" value="" placeholder="留空使用当前域名" />
-        </label>
-        <label>
-          <span>Session ID</span>
-          <input id="sessionId" value="demo-session-001" />
-        </label>
-        <div class="advanced__cta">
-          <button id="pingApi" class="btn outline small">测试连通性</button>
-          <span id="pingStatus" class="muted small-text"></span>
-        </div>
-      </div>
-    </section>
-
-    <main class="layout">
-      <section class="panel glass" id="panel-profile">
-        <div class="panel-title">
-          <span class="badge">STEP 1</span>
-          <h2>画像构建</h2>
-          <div class="panel-actions compact">
-            <button id="editProfile" class="btn outline small" disabled>编辑画像</button>
-            <button id="loadSample" class="btn outline small">填充示例</button>
-            <button id="clearProfile" class="btn ghost small">清空</button>
-          </div>
-        </div>
-        <div class="panel-body">
-          <label for="freeText" class="field-label">自由文本描述</label>
-          <textarea
-            id="freeText"
-            rows="8"
-            placeholder="用自然语言描述你的经历、技能、教育、项目、课程等（支持中文/英文）"
-          ></textarea>
-          <div class="upload-row">
-            <label id="dropzone" class="dropzone">
-              <strong>拖拽简历到此处</strong>
-              <span>或点击选择文件（PDF / DOC / DOCX / HTML，≤10MB）</span>
-              <input type="file" id="resumeFile" accept=".pdf,.doc,.docx,.html" />
-            </label>
-          </div>
-          <div class="button-row" style="margin-top: 16px;">
-            <button id="analyzeProfile" class="btn primary">启动画像</button>
-            <span id="analyzeStatus" class="muted">尚未调用</span>
-          </div>
-          <div id="profileSummary" class="summary empty scrollable">
-            <p>画像结果会展示在这里。</p>
-          </div>
-        </div>
-      </section>
-
-      <section class="panel glass" id="panel-jobs">
-        <div class="panel-title">
-          <span class="badge">STEP 2</span>
-          <h2>职位检索与处理</h2>
-        </div>
-        <div class="panel-body">
-          <div class="recommend-wrapper">
-            <div class="recommend-header">
-              <button id="roleRecommendBtn" class="btn outline">智能岗位推荐</button>
-              <span id="roleRecommendStatus" class="muted"></span>
-            </div>
-            <div id="roleRecommendations" class="role-recommendations empty">
-              <p>点击“智能岗位推荐”后将展示适合的岗位方向与命中关键词。</p>
-            </div>
-          </div>
-          <div class="form-grid">
-            <label>
-              <span>职位标题</span>
-              <input id="titles" placeholder="例如：Software Engineer, Developer" />
-            </label>
-            <label>
-              <span>关键字</span>
-              <input id="keywords" placeholder="例如：Python, C++, FastAPI" />
-            </label>
-            <label>
-              <span>地区</span>
-              <input id="locations" value="AU" />
-            </label>
-            <label>
-              <span>Seek 数量</span>
-              <input id="seekCount" type="number" value="5" min="0" max="50" />
-            </label>
-            <label>
-              <span>LinkedIn 数量</span>
-              <input id="linkedinCount" type="number" value="5" min="0" max="50" />
-            </label>
-            <label>
-              <span>总限制</span>
-              <input id="limit" type="number" value="10" min="1" max="100" />
-            </label>
-          </div>
-          <div class="button-row">
-            <button id="startStream" class="btn primary">开始流式搜索</button>
-            <button id="stopStream" class="btn ghost">停止</button>
-            <button id="nextBatch" class="btn outline">继续查找</button>
-            <span id="progress" class="muted"></span>
-          </div>
-          <div id="jobs" class="job-list empty scrollable">
-            <p class="placeholder">点击“开始流式搜索”后，职位卡片会出现在这里。</p>
-          </div>
-        </div>
-      </section>
-
-      <section class="panel glass" id="panel-resume">
-        <div class="panel-title">
-          <span class="badge">STEP 3</span>
-          <h2>匹配与简历输出</h2>
-        </div>
-        <div class="panel-body">
-          <!-- 隐藏但保持默认选中 -->
-          <input id="renderToggle" type="checkbox" checked style="display: none;" />
-          <div class="options-row">
-            <div class="button-row">
-              <button id="editResume" class="btn outline" disabled>编辑简历</button>
-              <button id="downloadDocx" class="btn outline">导出 DOCX</button>
-              <button id="downloadPdf" class="btn outline">导出 PDF</button>
-            </div>
-          </div>
-          <div id="matchResult" class="match-result muted">
-            尚未匹配，请在职位卡片中依次点击“解析 JD → 匹配 → 预览”。
-          </div>
-          <iframe id="preview" title="预览" loading="lazy"></iframe>
-        </div>
-      </section>
     </main>
 
-    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <div id="toast" class="toast"></div>
 
     <!-- 画像编辑模态框 -->
     <div id="profileEditModal" class="modal hidden">
@@ -165,50 +234,21 @@
           <button id="closeProfileModal" class="btn ghost small">✕</button>
         </div>
         <div class="modal-body">
-          <label>
-            <span>姓名</span>
-            <input id="editName" type="text" />
-          </label>
-          <label>
-            <span>联系方式</span>
-            <input id="editContact" type="text" />
-          </label>
-          <label>
-            <span>地点</span>
-            <input id="editLocation" type="text" />
-          </label>
-          <label>
-            <span>技能（逗号分隔）</span>
-            <textarea id="editSkills" rows="3"></textarea>
-          </label>
-          <label>
-            <span>教育背景（JSON 格式）</span>
-            <textarea id="editEducation" rows="5"></textarea>
-          </label>
-          <label>
-            <span>工作经历（JSON 格式）</span>
-            <textarea id="editExperience" rows="8"></textarea>
-          </label>
+          <label><span>姓名</span><input id="editName" type="text" /></label>
+          <label><span>联系方式</span><input id="editContact" type="text" /></label>
+          <label><span>地点</span><input id="editLocation" type="text" /></label>
+          <label><span>技能</span><textarea id="editSkills" rows="3"></textarea></label>
+          <label><span>教育背景</span><textarea id="editEducation" rows="4"></textarea></label>
+          <label><span>工作经历</span><textarea id="editExperience" rows="4"></textarea></label>
+          <label><span>个人简介</span><textarea id="editSummary" rows="4"></textarea></label>
         </div>
         <div class="modal-footer">
-          <button id="saveProfile" class="btn primary">保存修改</button>
-          <button id="cancelProfileEdit" class="btn ghost">取消</button>
+          <button id="saveProfile" class="btn primary">保存</button>
         </div>
       </div>
     </div>
 
-    <!-- 简历编辑区域 -->
-    <div id="resumeEditPanel" class="edit-panel hidden">
-      <div class="panel-header">
-        <h4>编辑简历内容</h4>
-        <button id="closeResumeEdit" class="btn ghost small">收起</button>
-      </div>
-      <textarea id="resumeEditor" rows="20"></textarea>
-      <div class="panel-footer">
-        <button id="updateResumePreview" class="btn primary small">更新预览</button>
-      </div>
-    </div>
-
-    <script src="script.js?v=10" defer></script>
+    <script src="script.js?v=12" defer></script>
   </body>
 </html>
+

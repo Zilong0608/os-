@@ -16,8 +16,13 @@ async def stream_jobs(input: SearchJobsInput) -> AsyncGenerator[bytes, None]:
     """
     Streams jobs as they are discovered. Uses session_id for server-side de-duplication.
     """
+    import logging
+    logger = logging.getLogger("jobs.stream")
+    
     requested = input.limit
     alloc = input.allocation or {}
+    
+    logger.info(f"🎯 开始流式搜索 - 总限制: {requested}, 分配: {alloc}")
 
     # Build initial exclude set from client and session memory
     exclude: Set[str] = set(input.exclude_hashes or [])
@@ -31,7 +36,9 @@ async def stream_jobs(input: SearchJobsInput) -> AsyncGenerator[bytes, None]:
 
     async def produce_seek():
         n = alloc.get("seek", 0)
+        logger.info(f"📍 Seek 线程启动 - 目标数量: {n}")
         if n <= 0:
+            logger.info(f"⏭️  Seek 数量为 0，跳过搜索")
             return
         remaining = n
         local_exclude = set(exclude)
@@ -58,7 +65,9 @@ async def stream_jobs(input: SearchJobsInput) -> AsyncGenerator[bytes, None]:
 
     async def produce_linkedin():
         n = alloc.get("linkedin", 0)
+        logger.info(f"📍 LinkedIn 线程启动 - 目标数量: {n}")
         if n <= 0:
+            logger.info(f"⏭️  LinkedIn 数量为 0，跳过搜索")
             return
         remaining = n
         local_exclude = set(exclude)
@@ -114,6 +123,7 @@ async def stream_jobs(input: SearchJobsInput) -> AsyncGenerator[bytes, None]:
             if job.hash in exclude or job.hash in delivered:
                 continue
             delivered.add(job.hash)
+            logger.info(f"✅ 返回职位 #{len(delivered)}/{requested} - 来源: {job.source} - 标题: {job.title}")
             # add to session seen immediately
             if input.session_id:
                 add_seen(input.session_id, [job.hash])
