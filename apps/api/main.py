@@ -28,6 +28,13 @@ def create_app() -> FastAPI:
 
     # Serve frontend demo at /ui
     app.mount("/ui", StaticFiles(directory="apps/ui", html=True), name="ui")
+    
+    # Add a root redirect to /ui/
+    from fastapi.responses import RedirectResponse
+    @app.get("/")
+    async def root():
+        return RedirectResponse(url="/ui/")
+    
     return app
 
 
