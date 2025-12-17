@@ -34,6 +34,10 @@ def web_search(query: str, top_k: int = 20, region: str = "AU") -> Optional[List
             from openai import OpenAI  # type: ignore
 
             client = OpenAI(api_key=GPT_API_KEY)
+            tool_type = OPENAI_WEB_TOOL_TYPE or "web_search_preview"
+            
+            logger.info(f"web_search: using Responses API with model={OPENAI_MODEL_WEB}, tool={tool_type}")
+            
             system = (
                 "You are a web job search assistant. Only return verifiable job listings. "
                 "Target region: AU. Respond strictly in JSON array with objects: "
@@ -43,8 +47,7 @@ def web_search(query: str, top_k: int = 20, region: str = "AU") -> Optional[List
                 f"Search for AU job listings using web search. Query: {query}. "
                 f"Return top {top_k} unique results from reputable job pages."
             )
-            # Use correct web tool type, e.g. 'web_search_preview' or 'web_search_preview_2025_03_11'
-            tool_type = OPENAI_WEB_TOOL_TYPE or "web_search_preview"
+            
             resp = client.responses.create(
                 model=OPENAI_MODEL_WEB,
                 input=[
@@ -53,16 +56,21 @@ def web_search(query: str, top_k: int = 20, region: str = "AU") -> Optional[List
                 ],
                 tools=[{"type": tool_type}],  # requires org access to specific Web tool
             )
+            
+            logger.info("web_search: Responses API returned response")
 
             # Best-effort: try to parse JSON from text output
             content = getattr(resp, "output_text", None) or getattr(resp, "content", None)
             if isinstance(content, str):
+                logger.info(f"web_search: Got string content (first 200 chars): {content[:200]}")
                 try:
                     data = json.loads(content)
                     if isinstance(data, list):
+                        logger.info(f"web_search: parsed {len(data)} jobs from output_text")
                         return data[:top_k]
-                except Exception:
-                    pass
+                except Exception as parse_err:
+                    logger.warning(f"web_search: Failed to parse JSON from output_text: {parse_err}")
+            
             # If Responses returns structured tool output, try to read from 'output' or 'tools'
             try:
                 chunks = getattr(resp, "output", None) or []
@@ -79,13 +87,17 @@ def web_search(query: str, top_k: int = 20, region: str = "AU") -> Optional[List
                                     parts.append(t.get("text", {}).get("value", ""))
                         s = "".join(parts)
                         if s:
+                            logger.info(f"web_search: Got structured content (first 200 chars): {s[:200]}")
                             data = json.loads(s)
                             if isinstance(data, list):
+                                logger.info(f"web_search: parsed {len(data)} jobs from structured output")
                                 return data[:top_k]
-            except Exception:
-                pass
+            except Exception as struct_err:
+                logger.warning(f"web_search: Failed to parse structured output: {struct_err}")
+                
         except Exception as e:
             logger.warning(f"OpenAI web tool path failed: {e}")
+            logger.exception("Full traceback:")
 
     # Fallback: return empty list (no fabrication)
     logger.info("web_search fallback: returning empty list (no web tool)")

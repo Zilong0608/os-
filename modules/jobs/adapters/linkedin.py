@@ -48,7 +48,8 @@ def _is_posting_fresh(result: dict) -> bool:
 def search_linkedin(query: JobQuery, limit: int = 50, exclude_hashes: List[str] | None = None) -> List[Job]:
     exclude = set(exclude_hashes or [])
     q = _build_query(query)
-    top_k = max(limit * 3, limit or 1)
+    # Reduced multiplier for faster response: only fetch slightly more than needed
+    top_k = min(limit + 2, 10)  # e.g. limit=2 -> top_k=4, limit=5 -> top_k=7, max=10
     results = web_search(q, top_k=top_k, region="AU") or []
     jobs: List[Job] = []
     for r in results:

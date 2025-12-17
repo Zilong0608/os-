@@ -55,13 +55,73 @@ def dedup_hash(title: str, company: str, location: str, url: str) -> str:
     return hashlib.sha1(key.encode("utf-8")).hexdigest()
 
 
+def is_job_too_old(result: Dict[str, Any], max_days: int = 30) -> bool:
+    """
+    Check if a job posting is too old based on posted_at or snippet text.
+    Returns True if the job is older than max_days (default 30 days).
+    """
+    import datetime
+    
+    # Check posted_at field
+    posted_at = result.get("posted_at")
+    if posted_at:
+        try:
+            if isinstance(posted_at, str):
+                # Try to parse date string
+                from dateutil import parser
+                posted_date = parser.parse(posted_at)
+                days_old = (datetime.datetime.now(posted_date.tzinfo or datetime.timezone.utc) - posted_date).days
+                return days_old > max_days
+        except:
+            pass
+    
+    # Check snippet for time indicators
+    text_parts = []
+    for key in ("title", "snippet", "description"):
+        val = result.get(key)
+        if isinstance(val, str):
+            text_parts.append(val.lower())
+    combined = " ".join(text_parts)
+    
+    if combined:
+        # Check for explicit "X days ago" or "X weeks ago" or "X months ago"
+        import re
+        
+        # Days ago
+        days_match = re.search(r'(\d+)\s*days?\s*ago', combined)
+        if days_match:
+            days = int(days_match.group(1))
+            if days > max_days:
+                return True
+        
+        # Weeks ago
+        weeks_match = re.search(r'(\d+)\s*weeks?\s*ago', combined)
+        if weeks_match:
+            weeks = int(weeks_match.group(1))
+            if weeks * 7 > max_days:
+                return True
+        
+        # Months ago (reject anything 1+ months old if max_days < 30, or 2+ months if max_days >= 30)
+        months_match = re.search(r'(\d+)\s*months?\s*ago', combined)
+        if months_match:
+            months = int(months_match.group(1))
+            if months * 30 > max_days:
+                return True
+    
+    return False
+
+
 def is_job_result_inactive(result: Dict[str, Any]) -> bool:
     """
     Best-effort heuristic to detect closed / expired job postings from web search results.
-    Checks explicit status flags, snippet/title cues, and URL patterns.
+    Checks explicit status flags, snippet/title cues, URL patterns, and freshness.
     """
     if not result:
         return False
+
+    # Check if job is too old (older than 30 days)
+    if is_job_too_old(result, max_days=30):
+        return True
 
     status = str(result.get("status") or "").strip().lower()
     if status in {"closed", "expired", "inactive", "filled", "stopped"}:

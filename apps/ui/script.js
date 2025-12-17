@@ -154,16 +154,20 @@
 
   function renderProfile(profile, meta = {}) {
     const summary = $('#profileSummary');
-    const jsonEl = $('#profileJson');
-    if (!summary || !jsonEl) return;
+    const editBtn = $('#editProfile');
+    if (!summary) return;
 
     if (!profile) {
       summary.classList.add('empty');
       summary.innerHTML = '<p>画像结果会展示在这里。</p>';
-      jsonEl.textContent = '';
       renderRoleRecommendations([]);
+      // 禁用编辑按钮
+      if (editBtn) editBtn.disabled = true;
       return;
     }
+    
+    // 启用编辑按钮
+    if (editBtn) editBtn.disabled = false;
 
     summary.classList.remove('empty');
 
@@ -254,7 +258,6 @@
       }
     `;
 
-    jsonEl.textContent = JSON.stringify(profile, null, 2);
     renderRoleRecommendations(meta.role_recommendations || []);
   }
 
@@ -803,18 +806,137 @@
     }
   }
 
+  // ========== 画像编辑功能 ==========
+  function openProfileEditModal() {
+    if (!state.profile) {
+      showToast('请先生成画像', 'error');
+      return;
+    }
+
+    // 填充表单
+    $('#editName').value = state.profile.name || '';
+    $('#editContact').value = state.profile.contact || '';
+    $('#editLocation').value = state.profile.location || '';
+    $('#editSkills').value = (state.profile.skills || []).join(', ');
+    $('#editEducation').value = JSON.stringify(state.profile.education || [], null, 2);
+    $('#editExperience').value = JSON.stringify(state.profile.experience || [], null, 2);
+
+    // 显示模态框
+    $('#profileEditModal')?.classList.remove('hidden');
+  }
+
+  function closeProfileEditModal() {
+    $('#profileEditModal')?.classList.add('hidden');
+  }
+
+  function saveProfileEdit() {
+    try {
+      // 读取表单值
+      const name = $('#editName').value.trim();
+      const contact = $('#editContact').value.trim();
+      const location = $('#editLocation').value.trim();
+      const skillsText = $('#editSkills').value.trim();
+      const educationText = $('#editEducation').value.trim();
+      const experienceText = $('#editExperience').value.trim();
+
+      // 解析技能
+      const skills = skillsText ? skillsText.split(',').map(s => s.trim()).filter(Boolean) : [];
+
+      // 解析 JSON
+      const education = educationText ? JSON.parse(educationText) : [];
+      const experience = experienceText ? JSON.parse(experienceText) : [];
+
+      // 更新 state.profile
+      state.profile = {
+        ...state.profile,
+        name,
+        contact,
+        location,
+        skills,
+        education,
+        experience,
+      };
+
+      // 重新渲染画像
+      renderProfile(state.profile);
+
+      // 关闭模态框
+      closeProfileEditModal();
+
+      showToast('画像已更新', 'success');
+    } catch (err) {
+      console.error(err);
+      showToast(`保存失败：${err.message || '格式错误'}`, 'error');
+    }
+  }
+
+  // ========== 简历编辑功能 ==========
+  function openResumeEditPanel() {
+    const iframe = $('#preview');
+    if (!iframe || !iframe.src || iframe.src === 'about:blank') {
+      showToast('请先生成简历', 'error');
+      return;
+    }
+
+    // 获取当前简历 HTML
+    try {
+      const doc = iframe.contentDocument || iframe.contentWindow.document;
+      const html = doc.documentElement.outerHTML;
+      $('#resumeEditor').value = html;
+      $('#resumeEditPanel')?.classList.remove('hidden');
+    } catch (err) {
+      console.error(err);
+      showToast('无法读取简历内容', 'error');
+    }
+  }
+
+  function closeResumeEdit() {
+    $('#resumeEditPanel')?.classList.add('hidden');
+  }
+
+  function updateResumePreview() {
+    const html = $('#resumeEditor').value;
+    const iframe = $('#preview');
+    
+    if (!iframe) {
+      showToast('找不到预览区域', 'error');
+      return;
+    }
+
+    try {
+      const doc = iframe.contentDocument || iframe.contentWindow.document;
+      doc.open();
+      doc.write(html);
+      doc.close();
+      showToast('预览已更新', 'success');
+    } catch (err) {
+      console.error(err);
+      showToast('更新失败', 'error');
+    }
+  }
+
   function bindEvents() {
     $('#analyzeProfile')?.addEventListener('click', analyzeProfile);
     $('#loadSample')?.addEventListener('click', loadSampleProfile);
     $('#clearProfile')?.addEventListener('click', clearProfile);
+    $('#editProfile')?.addEventListener('click', openProfileEditModal);
     $('#startStream')?.addEventListener('click', startStream);
     $('#stopStream')?.addEventListener('click', stopStream);
     $('#nextBatch')?.addEventListener('click', fetchNextBatch);
     $('#downloadDocx')?.addEventListener('click', () => download('docx'));
     $('#downloadPdf')?.addEventListener('click', () => download('pdf'));
+    $('#editResume')?.addEventListener('click', openResumeEditPanel);
     $('#pingApi')?.addEventListener('click', pingApi);
     $('#roleRecommendBtn')?.addEventListener('click', () => fetchRoleRecommendations(false));
-    $('#toggleAdvanced')?.addEventListener('click', toggleAdvancedPanel);
+    
+    // 画像编辑模态框
+    $('#closeProfileModal')?.addEventListener('click', closeProfileEditModal);
+    $('#cancelProfileEdit')?.addEventListener('click', closeProfileEditModal);
+    $('#saveProfile')?.addEventListener('click', saveProfileEdit);
+    
+    // 简历编辑面板
+    $('#updateResumePreview')?.addEventListener('click', updateResumePreview);
+    $('#closeResumeEdit')?.addEventListener('click', closeResumeEdit);
 
     const dropzone = $('#dropzone');
     const fileInput = $('#resumeFile');
