@@ -26,8 +26,8 @@ def create_app() -> FastAPI:
     app.include_router(matching_router, prefix="/matching", tags=["matching"])
     app.include_router(resume_router, prefix="/resume", tags=["resume"])
 
-    # Serve frontend demo at /ui
-    app.mount("/ui", StaticFiles(directory="apps/ui", html=True), name="ui")
+    # Serve frontend build at /ui
+    app.mount("/ui", StaticFiles(directory="apps/ui/dist", html=True), name="ui")
     
     # Add a root redirect to /ui/
     from fastapi.responses import RedirectResponse
