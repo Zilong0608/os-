@@ -1,6 +1,5 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 
 from modules.profile.router import router as profile_router
 from modules.jobs.router import router as jobs_router
@@ -26,14 +25,15 @@ def create_app() -> FastAPI:
     app.include_router(matching_router, prefix="/matching", tags=["matching"])
     app.include_router(resume_router, prefix="/resume", tags=["resume"])
 
-    # Serve frontend build at /ui
-    app.mount("/ui", StaticFiles(directory="apps/ui/dist", html=True), name="ui")
-    
-    # Add a root redirect to /ui/
-    from fastapi.responses import RedirectResponse
+    # Root endpoint - API info
     @app.get("/")
     async def root():
-        return RedirectResponse(url="/ui/")
+        return {
+            "message": "CVfoR1 API is running",
+            "docs": "/docs",
+            "version": "2.0",
+            "frontend": "Deployed separately as Static Site"
+        }
     
     return app
 
