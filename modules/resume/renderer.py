@@ -127,7 +127,10 @@ def render_html(input: RenderInput) -> RenderOutput:
 
     html_parts.append("<h2>核心技能</h2>")
     skills = profile.skills or []
-    html_parts.append(f"<p>{', '.join(skills)}</p>")
+    if skills:
+        html_parts.append(_list(skills))
+    else:
+        html_parts.append("<ul></ul>")
 
     html_parts.append("</body></html>")
     
