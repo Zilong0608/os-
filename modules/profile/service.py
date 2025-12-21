@@ -628,29 +628,37 @@ def _build_role_recommendations(profile: Profile, normalized_skills: List[str]) 
     tokens, text_blob = _collect_profile_tokens(profile, normalized_skills)
     lower_to_display = {s.lower(): s for s in normalized_skills}
 
-    recommendations: List[Tuple[str, List[str]]] = []
-    for title, keywords, min_hits in ROLE_RULES:
-        matched: List[str] = []
-        for kw in keywords:
-            kw_l = kw.lower()
-            if " " in kw_l:
-                if kw_l in text_blob:
-                    matched.append(kw)
-            else:
-                if kw_l in tokens:
-                    matched.append(kw)
-        if len(set(matched)) >= min_hits:
-            display_matches = []
-            seen = set()
-            for key in matched:
-                key_l = key.lower()
-                if key_l in seen:
-                    continue
-                seen.add(key_l)
-                display = lower_to_display.get(key_l) or key
-                display_matches.append(display)
-            if display_matches:
-                recommendations.append((title, display_matches))
+    def _pass(min_hits_override: int | None) -> List[Tuple[str, List[str]]]:
+        recs: List[Tuple[str, List[str]]] = []
+        for title, keywords, required in ROLE_RULES:
+            matched: List[str] = []
+            for kw in keywords:
+                kw_l = kw.lower()
+                if " " in kw_l:
+                    if kw_l in text_blob:
+                        matched.append(kw)
+                else:
+                    if kw_l in tokens:
+                        matched.append(kw)
+            threshold = min_hits_override if min_hits_override is not None else required
+            if len(set(matched)) >= threshold:
+                display_matches = []
+                seen = set()
+                for key in matched:
+                    key_l = key.lower()
+                    if key_l in seen:
+                        continue
+                    seen.add(key_l)
+                    display = lower_to_display.get(key_l) or key
+                    display_matches.append(display)
+                if display_matches:
+                    recs.append((title, display_matches))
+        return recs
+
+    recommendations: List[Tuple[str, List[str]]] = _pass(min_hits_override=None)
+    # If nothing matched strictly (e.g., very短简历只有 1 个技能)，放宽到至少 1 个命中给出兜底推荐
+    if not recommendations:
+        recommendations = _pass(min_hits_override=1)
 
     # Deduplicate by title, keep order by number of matches descending
     unique_recommendations = []
