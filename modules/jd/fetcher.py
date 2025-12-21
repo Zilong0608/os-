@@ -1,5 +1,6 @@
 import httpx
 import platform
+import os
 from urllib.parse import urlparse
 from .schemas import ParsedJD
 from .parser import parse_html_to_jd
@@ -100,10 +101,12 @@ def _render_page_html(url: str, debug: dict) -> str | None:
 
     try:
         with sync_playwright() as p:
+            proxy_url = os.getenv("PROXY_URL")
             # Add container-friendly flags to avoid sandbox/SHM issues on hosts like Render
             browser = p.chromium.launch(
                 headless=True,
                 args=["--no-sandbox", "--disable-gpu", "--disable-dev-shm-usage"],
+                proxy={"server": proxy_url} if proxy_url else None,
             )
             context = browser.new_context(
                 user_agent=HEADERS.get("User-Agent"),
