@@ -100,7 +100,11 @@ def _render_page_html(url: str, debug: dict) -> str | None:
 
     try:
         with sync_playwright() as p:
-            browser = p.chromium.launch(headless=True)
+            # Add container-friendly flags to avoid sandbox/SHM issues on hosts like Render
+            browser = p.chromium.launch(
+                headless=True,
+                args=["--no-sandbox", "--disable-gpu", "--disable-dev-shm-usage"],
+            )
             context = browser.new_context(
                 user_agent=HEADERS.get("User-Agent"),
                 locale="en-AU",
@@ -119,7 +123,7 @@ def _render_page_html(url: str, debug: dict) -> str | None:
             )
             page = context.new_page()
             page.set_default_timeout(int(RENDER_TIMEOUT * 1000))
-            page.goto(url, wait_until="domcontentloaded")
+            page.goto(url, wait_until="networkidle")
             # Try to wait for main content on Seek
             try:
                 page.wait_for_selector('[data-automation="jobAdDetails"], article, main', timeout=int(RENDER_TIMEOUT * 1000))
@@ -129,9 +133,9 @@ def _render_page_html(url: str, debug: dict) -> str | None:
                 pass
             # Allow client-side render to settle
             try:
-                page.wait_for_timeout(1200)
+                page.wait_for_timeout(1800)
                 page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
-                page.wait_for_timeout(600)
+                page.wait_for_timeout(1200)
             except Exception:
                 pass
             html = page.content()
@@ -139,5 +143,5 @@ def _render_page_html(url: str, debug: dict) -> str | None:
             browser.close()
             return html
     except Exception as e:
-        debug["notes"].append(f"playwright_error:{type(e).__name__}")
+        debug["notes"].append(f"playwright_error:{type(e).__name__}:{e}")
         return None
