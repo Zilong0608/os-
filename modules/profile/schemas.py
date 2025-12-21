@@ -11,7 +11,7 @@ class Course(BaseModel):
 
 
 class Education(BaseModel):
-    school: str
+    school: Optional[str] = None
     degree: Optional[str] = None
     major: Optional[str] = None
     start: Optional[str] = None
@@ -19,7 +19,7 @@ class Education(BaseModel):
 
 
 class Experience(BaseModel):
-    company: str
+    company: Optional[str] = None
     role: Optional[str] = None
     start: Optional[str] = None
     end: Optional[str] = None
