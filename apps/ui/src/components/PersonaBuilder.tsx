@@ -665,7 +665,7 @@ export function PersonaBuilder({ onBack, onNext, language, theme }: PersonaBuild
                                 </Button>
                               )}
                             </div>
-                            {(profile.experience || []).map((exp, idx) => (
+                        {(profile.experience || []).map((exp, idx) => (
                                <div key={idx} className={`relative p-5 border shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_25px_-10px_rgba(0,0,0,0.08)] transition-all
                                   ${isDark ? 'bg-white/5 border-white/10 rounded-none' : 'bg-white border-gray-100 rounded-2xl'}
                                `}>
@@ -742,9 +742,57 @@ export function PersonaBuilder({ onBack, onNext, language, theme }: PersonaBuild
                                       </ul>
                                     )}
                                   </>
-                                )}
-                               </div>
-                            ))}
+                               )}
+                              </div>
+                           ))}
+                         </div>
+                       )}
+
+                        {/* Section: Skills */}
+                        {((profile.skills && profile.skills.length > 0) || isEditing) && (
+                          <div className="space-y-5">
+                            <div className="flex items-center justify-between">
+                              <h3 className={`font-bold text-sm flex items-center gap-2 uppercase tracking-wider opacity-80 ${isDark ? 'text-gray-200' : 'text-gray-900'}`}>
+                                 <span className={`w-1.5 h-1.5 rounded-full ${isDark ? 'bg-white' : 'bg-black'}`}></span>
+                                {language === 'zh' ? '技能' : 'Skills'}
+                              </h3>
+                            </div>
+                            <div className={`p-4 rounded-lg ${isDark ? 'bg-white/5 border border-white/10' : 'bg-gray-50 border border-gray-100'}`}>
+                              {isEditing ? (
+                                <div className="space-y-3">
+                                  <Input
+                                    value={(profile.skills || []).join(', ')}
+                                    onChange={(e) => setProfile({
+                                      ...profile,
+                                      skills: e.target.value.split(',').map(s => s.trim()).filter(Boolean),
+                                    })}
+                                    className={`text-sm h-10 ${isDark ? 'bg-black/40 border-white/10 text-white rounded-none' : 'bg-white border-gray-200 text-gray-800 rounded-lg'}`}
+                                    placeholder={language === 'zh' ? '用逗号分隔，如：Python, React, SQL' : 'Comma separated, e.g. Python, React, SQL'}
+                                  />
+                                  <div className="flex flex-wrap gap-2">
+                                    {(profile.skills || []).map((s, idx) => (
+                                      <Badge key={idx} className={isDark ? 'bg-white/10 text-white' : 'bg-gray-200 text-gray-800'}>
+                                        {s}
+                                      </Badge>
+                                    ))}
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="flex flex-wrap gap-2">
+                                  {(profile.skills || []).length > 0 ? (
+                                    (profile.skills || []).map((s, idx) => (
+                                      <Badge key={idx} className={isDark ? 'bg-white/10 text-white' : 'bg-gray-200 text-gray-800'}>
+                                        {s}
+                                      </Badge>
+                                    ))
+                                  ) : (
+                                    <span className={isDark ? 'text-gray-400' : 'text-gray-500'}>
+                                      {language === 'zh' ? '暂未添加技能' : 'No skills added'}
+                                    </span>
+                                  )}
+                                </div>
+                              )}
+                            </div>
                           </div>
                         )}
 
@@ -780,4 +828,3 @@ export function PersonaBuilder({ onBack, onNext, language, theme }: PersonaBuild
     </div>
   );
 }
-

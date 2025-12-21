@@ -1,12 +1,12 @@
 ﻿import React, { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, ArrowRight, ExternalLink, FileText, BarChart3, FileOutput, Loader2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, ExternalLink, FileOutput, Loader2 } from 'lucide-react';
 import { Button } from './ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Input } from './ui/input';
 import { Badge } from './ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { motion } from 'motion/react';
-import { streamJobs, Job, fetchJD, matchProfileToJD } from '../services/api';
+import { streamJobs, Job } from '../services/api';
 import { useApp } from '../context/AppContext';
 
 interface JobSearchProps {
@@ -18,7 +18,7 @@ interface JobSearchProps {
 }
 
 export function JobSearch({ onBack, onNext, initialSearchTerm = '', language, theme }: JobSearchProps) {
-  const { sessionId, setSelectedJob, profile, jobs: globalJobs, setJobs: setGlobalJobs, setJDData, setMatchData } = useApp();
+  const { sessionId, setSelectedJob, jobs: globalJobs, setJobs: setGlobalJobs } = useApp();
   const cleanupRef = useRef<(() => void) | null>(null);
   
   const t = {
@@ -38,8 +38,6 @@ export function JobSearch({ onBack, onNext, initialSearchTerm = '', language, th
       jobShown: "(已显示 1 个职位)",
       searchingPlatform: "正在各大平台搜索职位...",
       openLink: "打开链接",
-      analyzeJD: "分析 JD",
-      matchScore: "匹配程度",
       generateResume: "生成简历"
     },
     en: {
@@ -58,8 +56,6 @@ export function JobSearch({ onBack, onNext, initialSearchTerm = '', language, th
       jobShown: "(1 job shown)",
       searchingPlatform: "Searching jobs on major platforms...",
       openLink: "Open Link",
-      analyzeJD: "Analyze JD",
-      matchScore: "Match Score",
       generateResume: "Generate Resume"
     }
   };
@@ -139,75 +135,6 @@ export function JobSearch({ onBack, onNext, initialSearchTerm = '', language, th
   const handleJobSelect = (job: Job) => {
     setSelectedJob(job);
     onNext();
-  };
-
-  const handleAnalyzeJD = async (job: Job) => {
-    const url = job.jd_url || job.url;
-    const isSeekSource = (job.source || '').toLowerCase().includes('seek') || (job.jd_url || job.url || '').toLowerCase().includes('seek.com');
-    if (!url) {
-      alert(language === 'zh' ? '该职位无链接' : 'No URL available');
-      return;
-    }
-    try {
-      // Seek 一律强制渲染抓取
-      const jdData = await fetchJD(url, isSeekSource ? true : false);
-      setJDData(jdData);
-      setSelectedJob(job);
-      const msg = language === 'zh'
-        ? `JD 分析完成，数据已保存到 Step 4`
-        : `JD Analysis Complete, data saved to Step 4`;
-      alert(msg);
-    } catch (err: any) {
-      const errorMsg = language === 'zh'
-        ? `JD 分析失败: ${err.message || err}`
-        : `JD Analysis Failed: ${err.message || err}`;
-      alert(errorMsg);
-      console.error('JD 分析错误:', err);
-    }
-  };
-
-  const handleMatchScore = async (job: Job) => {
-    if (!profile) {
-      alert(language === 'zh' ? '请先完成画像构建（Step 1）' : 'Please complete persona building (Step 1) first');
-      return;
-    }
-    try {
-      const url = job.jd_url || job.url;
-      const isSeekSource = (job.source || '').toLowerCase().includes('seek') || (job.jd_url || job.url || '').toLowerCase().includes('seek.com');
-      let jd: any = {
-        title: job.title,
-        company: job.company,
-        location: job.location,
-        keywords: job.keywords || [],
-      };
-      if (url) {
-        try {
-          const jdData = await fetchJD(url, isSeekSource ? true : false);
-          jd = {
-            ...jd,
-            requirements: jdData.requirements,
-            keywords: jdData.keywords || jd.keywords,
-            description: jdData.description,
-          };
-          setJDData(jdData);
-        } catch (err) {
-          console.log('无法获取详细 JD，使用基本信息匹配', err);
-        }
-      }
-      const matchResult = await matchProfileToJD(profile, jd);
-      setMatchData(matchResult);
-      setSelectedJob(job);
-      const msg = language === 'zh'
-        ? `匹配分析完成 (${matchResult.score}%)，数据已保存到 Step 4`
-        : `Match Analysis Complete (${matchResult.score}%), data saved to Step 4`;
-      alert(msg);
-    } catch (err: any) {
-      const errorMsg = language === 'zh'
-        ? `匹配分析失败\\n\\n${err.message || err}`
-        : `Match Analysis Failed\\n\\n${err.message || err}`;
-      alert(errorMsg);
-      console.error('匹配错误:', err);
-    }
   };
 
   const isDark = theme === 'dark';
@@ -545,28 +472,6 @@ export function JobSearch({ onBack, onNext, initialSearchTerm = '', language, th
                 </Button>
                 
                 <Button 
-                  variant="outline" 
-                  onClick={() => handleAnalyzeJD(job)}
-                  disabled={!job.jd_url && !job.url}
-                  className={`text-xs h-10 w-full font-medium shadow-sm hover:shadow transition-all
-                      ${isDark ? 'bg-white/10 border-white/20 text-white hover:bg-white/20 rounded-none' : 'bg-white border-gray-200 hover:bg-gray-50 text-[#1F1F1F] rounded-lg'}
-                  `}
-                >
-                  <FileText className="w-3 h-3 mr-2" /> {t[language].analyzeJD}
-                </Button>
-                
-                <Button 
-                  variant="outline" 
-                  onClick={() => handleMatchScore(job)}
-                  disabled={!profile}
-                  className={`text-xs h-10 w-full font-medium shadow-sm hover:shadow transition-all
-                      ${isDark ? 'bg-white/10 border-white/20 text-white hover:bg-white/20 rounded-none' : 'bg-white border-gray-200 hover:bg-gray-50 text-[#1F1F1F] rounded-lg'}
-                  `}
-                >
-                  <BarChart3 className="w-3 h-3 mr-2" /> {t[language].matchScore}
-                </Button>
-                
-                <Button 
                   variant="default" 
                   onClick={() => handleJobSelect(job)}
                   className={`text-xs h-10 w-full font-medium shadow-md hover:shadow-lg transition-all
@@ -604,3 +509,4 @@ export function JobSearch({ onBack, onNext, initialSearchTerm = '', language, th
     </div>
   );
 }
+
