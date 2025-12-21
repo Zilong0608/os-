@@ -1,7 +1,6 @@
 import httpx
 import platform
 from urllib.parse import urlparse
-import re
 from .schemas import ParsedJD
 from .parser import parse_html_to_jd
 
@@ -55,20 +54,11 @@ def fetch_and_parse(url: str, render: bool = False):
                     jd = parse_html_to_jd(html, url)
                     debug["content_length"] = len(html)
                     if is_seek and not any([jd.title, jd.company, jd.responsibilities, jd.requirements]):
-                        seek_fallback = _fetch_seek_api(url, debug)
-                        if seek_fallback:
-                            debug["notes"].append("seek_api_fallback_ok")
-                            return seek_fallback, debug
+                        debug["notes"].append("seek_render_parse_empty")
                     return jd, debug
                 else:
                     if force_render or resp.status_code == 403:
                         debug["notes"].append("render_failed")
-                    # Try API fallback for Seek even if render failed
-                    if is_seek:
-                        seek_fallback = _fetch_seek_api(url, debug)
-                        if seek_fallback:
-                            debug["notes"].append("seek_api_fallback_ok")
-                            return seek_fallback, debug
                     return ParsedJD(), debug
             html = resp.text
             debug["content_length"] = len(html)
@@ -84,12 +74,6 @@ def fetch_and_parse(url: str, render: bool = False):
                         debug["notes"].append("seek_render_parse_ok")
                     else:
                         debug["notes"].append("seek_render_parse_empty")
-            # Seek API fallback (public JSON) if still empty
-            if is_seek and not any([jd.title, jd.company, jd.responsibilities, jd.requirements]):
-                seek_fallback = _fetch_seek_api(url, debug)
-                if seek_fallback:
-                    jd = seek_fallback
-                    debug["notes"].append("seek_api_fallback_ok")
             # Heuristic note for likely blocked content
             if not any([jd.title, jd.company, jd.responsibilities, jd.requirements]) and debug["domain"].endswith("linkedin.com"):
                 debug["notes"].append("linkedin_login_or_scripted_page")
@@ -157,99 +141,3 @@ def _render_page_html(url: str, debug: dict) -> str | None:
     except Exception as e:
         debug["notes"].append(f"playwright_error:{type(e).__name__}")
         return None
-
-
-def _fetch_seek_api(url: str, debug: dict) -> ParsedJD | None:
-    """Public Seek job API fallback by job id. Avoids touching LinkedIn logic."""
-    m = re.search("/job/(\\d+)", url)
-    if not m:
-        return None
-    job_id = m.group(1)
-    endpoints = [
-        f"https://www.seek.com.au/api/chalice-search/v4/jobs?jobs={job_id}",
-        f"https://www.seek.com.au/api/chalice-search/v4/jobs/{job_id}",
-        f"https://www.seek.com.au/api/jobseekers/jobs/{job_id}",
-    ]
-    seek_headers = {
-        **HEADERS,
-        "Accept": "application/json, text/plain, */*",
-        "Referer": url,
-        "Origin": "https://www.seek.com.au",
-    }
-    last_status = None
-    data = None
-    for ep in endpoints:
-        try:
-            resp = httpx.get(ep, headers=seek_headers, timeout=DEFAULT_TIMEOUT)
-        except Exception as e:
-            debug["notes"].append(f"seek_api_error:{type(e).__name__}")
-            continue
-        last_status = resp.status_code
-        debug["notes"].append(f"seek_api_attempt:{ep}|{resp.status_code}")
-        if resp.status_code != 200:
-            continue
-        try:
-            data = resp.json()
-            break
-        except Exception:
-            debug["notes"].append("seek_api_json_error")
-            data = None
-            continue
-
-    if data is None:
-        if last_status:
-            debug["notes"].append(f"seek_api_status_{last_status}")
-        return None
-
-    jobs = None
-    if isinstance(data, dict):
-        for key in ["data", "jobs", "results"]:
-            if key in data and isinstance(data[key], list):
-                jobs = data[key]
-                break
-        if jobs is None and "job" in data and isinstance(data["job"], dict):
-            jobs = [data["job"]]
-    if not jobs or not isinstance(jobs, list):
-        debug["notes"].append("seek_api_no_jobs")
-        return None
-    job = jobs[0] if jobs else None
-    if not isinstance(job, dict):
-        debug["notes"].append("seek_api_invalid_job")
-        return None
-
-    title = job.get("title") or job.get("jobTitle")
-    adv = job.get("advertiser") or {}
-    company = None
-    if isinstance(adv, dict):
-        company = adv.get("description") or adv.get("name") or adv.get("companyName")
-    location = job.get("location") or job.get("displayLocation") or job.get("workLocation")
-
-    bullets = []
-    bullet_points = job.get("bulletPoints") or job.get("bullet_points")
-    if isinstance(bullet_points, list):
-        bullets.extend([str(x).strip() for x in bullet_points if str(x).strip()])
-    desc = job.get("content") or job.get("teaser") or job.get("summary") or job.get("adDetails") or job.get("description")
-    if isinstance(desc, str) and len(desc.strip()) > 0:
-        bullets.append(desc.strip())
-
-    if not any([title, company, location, bullets]):
-        debug["notes"].append("seek_api_empty_job")
-        return None
-
-    # split bullets into simple responsibilities/requirements buckets
-    responsibilities = []
-    requirements = []
-    for b in bullets:
-        if re.search(r"experience|required|skill|qualification|degree", b, re.I):
-            requirements.append(b)
-        else:
-            responsibilities.append(b)
-
-    return ParsedJD(
-        title=title,
-        company=company,
-        location=location,
-        responsibilities=responsibilities,
-        requirements=requirements,
-        keywords=[],
-    )
