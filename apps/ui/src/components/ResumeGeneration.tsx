@@ -14,15 +14,21 @@ import { previewResume, exportResumeDocx, exportResumePdf, downloadBlob } from '
     theme: 'light' | 'dark';                                                                                                                                                                                                       
   }                                                                                                                                                                                                                                
                                                                                                                                                                                                                                    
-  export function ResumeGeneration({ onBack, onNext, language, theme }: ResumeGenerationProps) {                                                                                                                                   
-    const { profile, selectedJob, jdData, matchData: globalMatchData } = useApp();                                                                                                                                                 
-    const [resumeHtml, setResumeHtml] = useState<string>('');                                                                                                                                                                      
-    const [isLoading, setIsLoading] = useState(false);                                                                                                                                                                             
-    const [error, setError] = useState<string>('');                                                                                                                                                                                
-    const [matchResult, setMatchResult] = useState<any>(globalMatchData);                                                                                                                                                          
-                                                                                                                                                                                                                                   
-    // 如果有 profile 就可以生成简历，JD 和匹配数据是可选的                                                                                                                                                                        
-    const canGenerateResume = profile !== null;                                                                                                                                                                                    
+  export function ResumeGeneration({ onBack, onNext, language, theme }: ResumeGenerationProps) {
+    const { profile, selectedJob, jdData, matchData: globalMatchData } = useApp();
+    const [resumeHtml, setResumeHtml] = useState<string>('');
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string>('');
+    const [matchResult, setMatchResult] = useState<any>(globalMatchData);
+    
+    // 如果有 profile 就可以生成简历，JD 和匹配数据是可选的
+    const canGenerateResume = profile !== null;
+    
+    // 判断是否为LinkedIn职位
+    const isLinkedInJob = selectedJob && (
+      (selectedJob.source || '').toLowerCase().includes('linkedin') || 
+      (selectedJob.jd_url || selectedJob.url || '').toLowerCase().includes('linkedin.com')
+    );
                                                                                                                                                                                                                                    
     // 同步全局匹配数据到本地状态                                                                                                                                                                                                  
     useEffect(() => {                                                                                                                                                                                                              
@@ -273,8 +279,8 @@ import { previewResume, exportResumeDocx, exportResumePdf, downloadBlob } from '
             </Button>
           </div>
 
-          {/* JD Information Card */}
-          {jdData && (
+          {/* JD Information Card - 仅 LinkedIn 职位显示 */}
+          {isLinkedInJob && jdData && (
             <div className={`backdrop-blur-md p-5 shadow-[0_10px_30px_-15px_rgba(0,0,0,0.1)] border transition-all
                 ${isDark 
                    ? 'bg-white/5 border-white/10 hover:bg-white/8 text-white rounded-none' 
@@ -333,8 +339,8 @@ import { previewResume, exportResumeDocx, exportResumePdf, downloadBlob } from '
             </div>
           )}
 
-          {/* Match Analysis Card */}
-          {matchResult ? (
+          {/* Match Analysis Card - 仅 LinkedIn 职位显示 */}
+          {isLinkedInJob && matchResult ? (
             <div className={`backdrop-blur-md p-5 shadow-[0_10px_30px_-15px_rgba(0,0,0,0.1)] border flex flex-row transition-all group/match
                 ${isDark 
                    ? 'bg-white/5 border-white/10 hover:bg-white/8 text-white rounded-none' 
@@ -378,16 +384,16 @@ import { previewResume, exportResumeDocx, exportResumePdf, downloadBlob } from '
                   </div>
                </div>
             </div>
-          ) : (
+          ) : isLinkedInJob ? (
             <div className={`backdrop-blur-md p-5 shadow-[0_10px_30px_-15px_rgba(0,0,0,0.1)] border text-center text-xs
                 ${isDark 
                    ? 'bg-white/5 border-white/10 text-gray-400 rounded-none' 
                    : 'bg-white/70 border-white/50 text-gray-600 rounded-2xl'
                 }
             `}>
-              {t[language].noMatchData}
+              {language === 'zh' ? '暂无匹配数据' : 'No match data available'}
             </div>
-          )}
+          ) : null}
 
           {/* Resume Preview */}
           <div className="flex-1 min-h-0">

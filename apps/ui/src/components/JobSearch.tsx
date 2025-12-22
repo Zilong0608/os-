@@ -1,12 +1,12 @@
 ﻿import React, { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, ArrowRight, ExternalLink, FileOutput, Loader2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, ExternalLink, FileOutput, Loader2, FileSearch, Zap } from 'lucide-react';
 import { Button } from './ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Input } from './ui/input';
 import { Badge } from './ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { motion } from 'motion/react';
-import { streamJobs, Job } from '../services/api';
+import { streamJobs, Job, fetchJD, matchProfileToJD } from '../services/api';
 import { useApp } from '../context/AppContext';
 
 interface JobSearchProps {
@@ -18,8 +18,10 @@ interface JobSearchProps {
 }
 
 export function JobSearch({ onBack, onNext, initialSearchTerm = '', language, theme }: JobSearchProps) {
-  const { sessionId, setSelectedJob, jobs: globalJobs, setJobs: setGlobalJobs } = useApp();
+  const { sessionId, setSelectedJob, jobs: globalJobs, setJobs: setGlobalJobs, profile, setJDData, setMatchData } = useApp();
   const cleanupRef = useRef<(() => void) | null>(null);
+  const [analyzingJobId, setAnalyzingJobId] = useState<string | null>(null);
+  const [matchingJobId, setMatchingJobId] = useState<string | null>(null);
   
   const t = {
     zh: {
@@ -132,9 +134,84 @@ export function JobSearch({ onBack, onNext, initialSearchTerm = '', language, th
     setIsSearching(false);
   };
 
-  const handleJobSelect = (job: Job) => {
+  const handleJobSelect = async (job: Job) => {
     setSelectedJob(job);
+    
+    // 如果是LinkedIn职位且有profile，自动分析和匹配
+    const isLinkedInJob = (job.source || '').toLowerCase().includes('linkedin') || 
+                          (job.jd_url || job.url || '').toLowerCase().includes('linkedin.com');
+    
+    if (isLinkedInJob && profile) {
+      const jobUrl = job.jd_url || job.url;
+      if (jobUrl) {
+        try {
+          // 自动获取JD数据和匹配
+          const jdData = await fetchJD(jobUrl, true);
+          setJDData(jdData);
+          
+          const matchResult = await matchProfileToJD(profile, jdData);
+          setMatchData(matchResult);
+        } catch (error) {
+          console.error('Auto-analyze failed:', error);
+          // 即使失败也继续导航
+        }
+      }
+    }
+    
     onNext();
+  };
+
+  // 分析JD
+  const handleAnalyzeJD = async (job: Job) => {
+    const jobUrl = job.jd_url || job.url;
+    if (!jobUrl) {
+      alert(language === 'zh' ? '没有职位链接' : 'No job URL available');
+      return;
+    }
+
+    setAnalyzingJobId(job.id || job.hash);
+    try {
+      const jdData = await fetchJD(jobUrl, true);
+      setJDData(jdData);
+      alert(language === 'zh' ? 'JD 分析完成！' : 'JD Analysis Complete!');
+    } catch (error: any) {
+      console.error('Analyze JD error:', error);
+      alert(language === 'zh' ? `分析失败: ${error.message}` : `Analysis failed: ${error.message}`);
+    } finally {
+      setAnalyzingJobId(null);
+    }
+  };
+
+  // 智能匹配
+  const handleSmartMatch = async (job: Job) => {
+    if (!profile) {
+      alert(language === 'zh' ? '请先完成画像构建' : 'Please complete persona building first');
+      return;
+    }
+
+    const jobUrl = job.jd_url || job.url;
+    if (!jobUrl) {
+      alert(language === 'zh' ? '没有职位链接' : 'No job URL available');
+      return;
+    }
+
+    setMatchingJobId(job.id || job.hash);
+    try {
+      // 先获取JD数据
+      const jdData = await fetchJD(jobUrl, true);
+      setJDData(jdData);
+      
+      // 再进行匹配
+      const matchResult = await matchProfileToJD(profile, jdData);
+      setMatchData(matchResult);
+      
+      alert(language === 'zh' ? `匹配完成！匹配度: ${matchResult.score}%` : `Match Complete! Score: ${matchResult.score}%`);
+    } catch (error: any) {
+      console.error('Smart match error:', error);
+      alert(language === 'zh' ? `匹配失败: ${error.message}` : `Match failed: ${error.message}`);
+    } finally {
+      setMatchingJobId(null);
+    }
   };
 
   const isDark = theme === 'dark';
@@ -400,7 +477,19 @@ export function JobSearch({ onBack, onNext, initialSearchTerm = '', language, th
               </div>
             )}
 
-            {jobs.map((job, index) => (
+            {jobs.map((job, index) => {
+              // 调试：打印每个job的source字段
+              const isLinkedIn = (job.source || '').toLowerCase().includes('linkedin') || (job.jd_url || job.url || '').toLowerCase().includes('linkedin.com');
+              const isSeek = (job.source || '').toLowerCase().includes('seek') || (job.jd_url || job.url || '').toLowerCase().includes('seek.com');
+              console.log(`Job ${index}:`, { 
+                title: job.title, 
+                source: job.source, 
+                url: job.jd_url || job.url,
+                isLinkedIn,
+                isSeek
+              });
+              
+              return (
               <motion.div
                 key={job.hash || job.id || index}
                 initial={{ opacity: 0, y: 20 }}
@@ -451,7 +540,74 @@ export function JobSearch({ onBack, onNext, initialSearchTerm = '', language, th
                 )}
               </p>
               
-              <div className="grid grid-cols-2 gap-3">
+              {/* 判断是否为LinkedIn职位 */}
+              {((job.source || '').toLowerCase().includes('linkedin') || (job.jd_url || job.url || '').toLowerCase().includes('linkedin.com')) ? (
+                /* LinkedIn 职位：显示4个按钮 */
+                <div className="grid grid-cols-2 gap-3">
+                <Button 
+                  variant="default" 
+                  onClick={() => {
+                    const url = job.jd_url || job.url;
+                    if (url) window.open(url, '_blank');
+                  }}
+                  disabled={!job.jd_url && !job.url}
+                  className={`text-xs h-10 w-full font-medium shadow-md hover:shadow-lg transition-all relative overflow-hidden group
+                      ${isDark ? 'bg-white text-black hover:bg-gray-200 rounded-none' : 'bg-[#2D2D2D] text-white hover:bg-black rounded-lg'}
+                  `}
+                >
+                  <div className="absolute inset-0 opacity-0 group-hover:opacity-20 transition-opacity duration-700 pointer-events-none" style={{ backgroundImage: `linear-gradient(${isDark ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.5)'} 1px, transparent 1px), linear-gradient(90deg, ${isDark ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.5)'} 1px, transparent 1px)`, backgroundSize: '10px 10px' }}></div>
+                  <div className={`absolute top-0 left-[-100%] w-[50%] h-full bg-gradient-to-r skew-x-[-20deg] group-hover:animate-[shimmer_2s_infinite]
+                      ${isDark ? 'from-transparent via-black/10 to-transparent' : 'from-transparent via-white/10 to-transparent'}
+                  `}></div>
+                  
+                  <span className="relative z-10 flex items-center justify-center"><ExternalLink className="w-3 h-3 mr-2" /> {t[language].openLink}</span>
+                </Button>
+                
+                <Button 
+                  variant="outline"
+                  onClick={() => handleAnalyzeJD(job)}
+                  disabled={analyzingJobId === (job.id || job.hash)}
+                  className={`text-xs h-10 w-full font-medium shadow-md hover:shadow-lg transition-all
+                      ${isDark ? 'bg-white/10 text-white border-white/20 hover:bg-white/20 rounded-none' : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50 rounded-lg'}
+                  `}
+                >
+                  {analyzingJobId === (job.id || job.hash) ? (
+                    <Loader2 className="w-3 h-3 mr-2 animate-spin" />
+                  ) : (
+                    <FileSearch className="w-3 h-3 mr-2" />
+                  )}
+                  {language === 'zh' ? '分析JD' : 'Analyze JD'}
+                </Button>
+                
+                <Button 
+                  variant="outline"
+                  onClick={() => handleSmartMatch(job)}
+                  disabled={matchingJobId === (job.id || job.hash)}
+                  className={`text-xs h-10 w-full font-medium shadow-md hover:shadow-lg transition-all
+                      ${isDark ? 'bg-white/10 text-white border-white/20 hover:bg-white/20 rounded-none' : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50 rounded-lg'}
+                  `}
+                >
+                  {matchingJobId === (job.id || job.hash) ? (
+                    <Loader2 className="w-3 h-3 mr-2 animate-spin" />
+                  ) : (
+                    <Zap className="w-3 h-3 mr-2" />
+                  )}
+                  {language === 'zh' ? '智能匹配' : 'Smart Match'}
+                </Button>
+                
+                <Button 
+                  variant="default" 
+                  onClick={() => handleJobSelect(job)}
+                  className={`text-xs h-10 w-full font-medium shadow-md hover:shadow-lg transition-all
+                      ${isDark ? 'bg-[#222] text-white border border-white/20 hover:bg-[#333] rounded-none' : 'bg-[#1A1A1A] text-white hover:bg-black rounded-lg'}
+                  `}
+                >
+                  <FileOutput className="w-3 h-3 mr-2" /> {t[language].generateResume}
+                </Button>
+              </div>
+              ) : (
+                /* Seek 职位：只显示2个按钮 */
+                <div className="grid grid-cols-2 gap-3">
                 <Button 
                   variant="default" 
                   onClick={() => {
@@ -481,8 +637,10 @@ export function JobSearch({ onBack, onNext, initialSearchTerm = '', language, th
                   <FileOutput className="w-3 h-3 mr-2" /> {t[language].generateResume}
                 </Button>
               </div>
+              )}
             </motion.div>
-            ))}
+            )}
+            )}
           </div>
 
         </CardContent>
