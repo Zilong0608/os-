@@ -22,13 +22,13 @@ export function JobRecommendations({ onBack, onNext, onSelectJob, language, them
     zh: {
       step2: "STEP 2",
       title: "智能岗位推荐",
-      analyzing: "分析中...",
+      analyzing: "分析�?..",
       aiRecommend: "AI 推荐",
-      description: "基于您的画像，AI 将推荐最匹配的职位方向",
-      startRecommend: "开始推荐",
+      description: "基于您的画像，AI 将推荐最匹配的职位方�?,
+      startRecommend: "开始推�?,
       recommendAgain: "重新推荐",
       done: "完成",
-      keywords: "关键词"
+      keywords: "关键�?
     },
     en: {
       step2: "STEP 2",
@@ -47,8 +47,7 @@ export function JobRecommendations({ onBack, onNext, onSelectJob, language, them
   const [recommendations, setRecommendations] = useState<RoleRecommendation[]>([]);
   const [error, setError] = useState<string>('');
 
-  // 不再自动清空，保持流程中的数据
-
+  // 不再自动清空，保持流程中的数�?
   const handleStart = async () => {
     if (!profile) {
       setError(language === 'zh' ? '请先完成画像构建' : 'Please complete persona building first');
@@ -89,7 +88,7 @@ export function JobRecommendations({ onBack, onNext, onSelectJob, language, them
 
        {/* Background Header */}
        <div className="absolute top-14 md:top-6 left-0 right-0 text-center z-10 pointer-events-none">
-        <h2 className={`text-2xl font-serif italic drop-shadow-sm tracking-tight ${isDark ? 'text-gray-200' : 'text-[#1A1A1A]'}`}>MirrorStudio</h2>
+        <h2 className={`text-2xl font-serif italic drop-shadow-sm tracking-tight ${isDark ? 'text-gray-200' : 'text-[#1A1A1A]'}`}>MirrorCarrer</h2>
         <p className={`text-[10px] tracking-[0.3em] uppercase font-semibold ${isDark ? 'text-gray-400 opacity-60' : 'text-[#444] opacity-70'}`}>CVfoR1</p>
       </div>
 
@@ -361,3 +360,5 @@ export function JobRecommendations({ onBack, onNext, onSelectJob, language, them
     </div>
   );
 }
+
+

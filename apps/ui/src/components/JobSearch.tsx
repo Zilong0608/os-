@@ -148,7 +148,7 @@ export function JobSearch({ onBack, onNext, initialSearchTerm = '', language, th
 
        {/* Background Header */}
        <div className="absolute top-14 md:top-6 left-0 right-0 text-center z-10 pointer-events-none">
-        <h2 className={`text-2xl font-serif italic drop-shadow-sm tracking-tight ${isDark ? 'text-gray-200' : 'text-[#1A1A1A]'}`}>MirrorStudio</h2>
+        <h2 className={`text-2xl font-serif italic drop-shadow-sm tracking-tight ${isDark ? 'text-gray-200' : 'text-[#1A1A1A]'}`}>MirrorCarrer</h2>
         <p className={`text-[10px] tracking-[0.3em] uppercase font-semibold ${isDark ? 'text-gray-400 opacity-60' : 'text-[#444] opacity-70'}`}>CVfoR1</p>
       </div>
 
@@ -509,4 +509,5 @@ export function JobSearch({ onBack, onNext, initialSearchTerm = '', language, th
     </div>
   );
 }
+
 

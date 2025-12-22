@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { ArrowLeft, ArrowRight, Edit2, ChevronUp } from 'lucide-react';
 import { Button } from './ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
@@ -18,7 +18,7 @@ export function PersonaDetails({ onBack, onNext, theme }: PersonaDetailsProps) {
     <div className={`flex items-center justify-center min-h-screen bg-transparent p-4 overflow-hidden relative ${isDark ? 'text-gray-100' : 'text-[#1A1A1A]'}`}>
       {/* Background Header */}
       <div className="absolute top-8 left-0 right-0 text-center">
-        <h2 className={`text-2xl font-serif italic ${isDark ? 'text-white' : 'text-black'}`}>MirrorStudio</h2>
+        <h2 className={`text-2xl font-serif italic ${isDark ? 'text-white' : 'text-black'}`}>MirrorCarrer</h2>
         <p className={`text-xs tracking-widest uppercase ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>CV for R1</p>
       </div>
 
@@ -39,13 +39,13 @@ export function PersonaDetails({ onBack, onNext, theme }: PersonaDetailsProps) {
           ${isDark ? 'bg-[#111] text-gray-200' : 'bg-white text-[#1A1A1A]'}
       `}>
         <CardHeader className={`flex flex-row items-center justify-between border-b py-4 shrink-0 ${isDark ? 'border-white/10' : 'border-gray-100'}`}>
-          <CardTitle className="text-lg font-bold">个人画像详情</CardTitle>
+          <CardTitle className="text-lg font-bold">涓汉鐢诲儚璇︽儏</CardTitle>
           <div className="flex gap-2">
             <Button variant="outline" size="sm" className={`text-xs rounded-full h-8 px-3 gap-1 ${isDark ? 'bg-white/5 border-white/10 hover:bg-white/10' : ''}`}>
-              <Edit2 className="w-3 h-3" /> 编辑
+              <Edit2 className="w-3 h-3" /> 缂栬緫
             </Button>
             <Button variant="outline" size="sm" className={`text-xs rounded-full h-8 px-3 gap-1 ${isDark ? 'bg-white/5 border-white/10 hover:bg-white/10' : ''}`}>
-              收起 <ChevronUp className="w-3 h-3" />
+              鏀惰捣 <ChevronUp className="w-3 h-3" />
             </Button>
           </div>
         </CardHeader>
@@ -64,7 +64,7 @@ export function PersonaDetails({ onBack, onNext, theme }: PersonaDetailsProps) {
 
               {/* Section: Intro */}
               <div className="space-y-2">
-                <h3 className={`font-bold text-sm ${isDark ? 'text-gray-200' : 'text-black'}`}>个人简介</h3>
+                <h3 className={`font-bold text-sm ${isDark ? 'text-gray-200' : 'text-black'}`}>涓汉绠€浠?/h3>
                 <p className={`text-sm leading-relaxed ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
                   Motivated and detail-oriented technology professional with a strong foundation in computer science, data science, and artificial intelligence. Experienced in software development, data processing, and the design of efficient technical solutions across both backend and frontend contexts. Demonstrates strong analytical ability, adaptability, and the capacity to take ownership of complex tasks from planning to execution. Skilled in applying automation, systematic problem-solving, and modern development practices to deliver reliable and scalable outcomes.
                 </p>
@@ -72,30 +72,30 @@ export function PersonaDetails({ onBack, onNext, theme }: PersonaDetailsProps) {
 
               {/* Section: Education */}
               <div className="space-y-4">
-                <h3 className={`font-bold text-sm ${isDark ? 'text-gray-200' : 'text-black'}`}>教育背景</h3>
+                <h3 className={`font-bold text-sm ${isDark ? 'text-gray-200' : 'text-black'}`}>鏁欒偛鑳屾櫙</h3>
                 
                 <div className={`border-l-2 pl-4 space-y-1 ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
                   <div className="font-semibold text-sm">University of New South Wales</div>
                   <div className="text-xs text-gray-400">2023 - Present</div>
-                  <div className="text-sm">Master of Information Technology · Artificial Intelligence Specialisation</div>
+                  <div className="text-sm">Master of Information Technology 路 Artificial Intelligence Specialisation</div>
                 </div>
 
                 <div className={`border-l-2 pl-4 space-y-1 ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
                   <div className="font-semibold text-sm">The University of Auckland</div>
                   <div className="text-xs text-gray-400">2021 - 2023</div>
-                  <div className="text-sm">Bachelor of Science · Computer Science & Statistics</div>
+                  <div className="text-sm">Bachelor of Science 路 Computer Science & Statistics</div>
                 </div>
 
                 <div className={`border-l-2 pl-4 space-y-1 ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
                   <div className="font-semibold text-sm">UP Education</div>
                   <div className="text-xs text-gray-400">2018 - 2019</div>
-                  <div className="text-sm">Foundation Programme · Academic English, Mathematics, Physics, Calculus, Accounting</div>
+                  <div className="text-sm">Foundation Programme 路 Academic English, Mathematics, Physics, Calculus, Accounting</div>
                 </div>
               </div>
 
               {/* Section: Experience */}
               <div className="space-y-4">
-                <h3 className={`font-bold text-sm ${isDark ? 'text-gray-200' : 'text-black'}`}>工作经历</h3>
+                <h3 className={`font-bold text-sm ${isDark ? 'text-gray-200' : 'text-black'}`}>宸ヤ綔缁忓巻</h3>
                 
                 <div className={`border-l-2 pl-4 space-y-2 ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
                   <div>
@@ -138,3 +138,4 @@ export function PersonaDetails({ onBack, onNext, theme }: PersonaDetailsProps) {
     </div>
   );
 }
+

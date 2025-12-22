@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+﻿import React, { useEffect, useState, useRef } from 'react';
 import { ArrowRight, Play, Sun, Moon } from 'lucide-react';
 import { Button } from './ui/button';
 import { motion, AnimatePresence } from 'motion/react';
@@ -129,7 +129,7 @@ const ReflectiveTitle = ({ isDark }: { isDark: boolean }) => {
        {/* --- Main Text Layer (Z-10) --- */}
        <div className="relative z-10 flex flex-col md:flex-row items-center md:items-baseline justify-center gap-2 md:gap-8">
           
-          {/* MirrorStudio */}
+          {/* MirrorCarrer */}
           <motion.h1 
             initial={{ opacity: 0, y: 20 }}
             animate={{ 
@@ -150,7 +150,7 @@ const ReflectiveTitle = ({ isDark }: { isDark: boolean }) => {
             }}
             className="text-5xl md:text-8xl font-black tracking-tighter cursor-default"
           >
-            MirrorStudio
+            MirrorCarrer
           </motion.h1>
 
           <span className={`hidden md:inline-block text-4xl md:text-6xl font-light transition-colors duration-500 ${isDark ? 'text-white/20' : 'text-black/20'}`}>|</span>
@@ -188,7 +188,7 @@ const ReflectiveTitle = ({ isDark }: { isDark: boolean }) => {
                     duration: 6, 
                     repeat: Infinity, 
                     ease: "linear",
-                    delay: 2.5 // Starts after MirrorStudio's main sweep
+                    delay: 2.5 // Starts after MirrorCarrer's main sweep
                 }}
                 style={{ 
                     backgroundImage: isDark ? darkGradient : lightGradient,
@@ -216,7 +216,7 @@ const ReflectiveTitle = ({ isDark }: { isDark: boolean }) => {
          }}
        >
            <h1 className={`text-5xl md:text-8xl font-black tracking-tighter ${isDark ? 'text-white' : 'text-black'}`}>
-             MirrorStudio
+             MirrorCarrer
            </h1>
            <span className={`hidden md:inline-block text-4xl md:text-6xl font-light ${isDark ? 'text-white/30' : 'text-black/30'}`}>|</span>
            <div className={`flex items-baseline ${isDark ? 'text-white' : 'text-black'}`}>
@@ -297,9 +297,9 @@ export function Landing({ onStart, language, onToggleLanguage, theme, onToggleTh
   
   const t = {
     zh: {
-      logoSub: "AI 原生孵化器",
-      description: "探索新的技术方向与工作范式",
-      button: "开启探索之旅"
+      logoSub: "AI 鍘熺敓瀛靛寲鍣?,
+      description: "鎺㈢储鏂扮殑鎶€鏈柟鍚戜笌宸ヤ綔鑼冨紡",
+      button: "寮€鍚帰绱箣鏃?
     },
     en: {
       logoSub: "AI NATIVE INCUBATOR",
@@ -508,9 +508,10 @@ export function Landing({ onStart, language, onToggleLanguage, theme, onToggleTh
         
            {/* Right Aligned Copyright */}
            <div className="ml-auto">
-              <span>COPYRIGHT © 2025</span>
+              <span>COPYRIGHT 漏 2025</span>
            </div>
         </div>
     </div>
   );
 }
+
