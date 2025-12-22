@@ -3,64 +3,66 @@ import { ArrowLeft, ArrowRight, Edit2, Loader2, Download, FileText } from 'lucid
 import { motion } from 'motion/react';
 import { Button } from './ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { ScrollArea } from './ui/scroll-area';                                                                                                                                                                                   
-import { useApp } from '../context/AppContext';                                                                                                                                                                                  
-import { previewResume, exportResumeDocx, exportResumePdf, downloadBlob } from '../services/api';                                                                                                                                
-                                                                                                                                                                                                                                   
-  interface ResumeGenerationProps {                                                                                                                                                                                                
-    onBack: () => void;                                                                                                                                                                                                            
-    onNext: () => void;                                                                                                                                                                                                            
-    language: 'zh' | 'en';                                                                                                                                                                                                         
-    theme: 'light' | 'dark';                                                                                                                                                                                                       
-  }                                                                                                                                                                                                                                
-                                                                                                                                                                                                                                   
-  export function ResumeGeneration({ onBack, onNext, language, theme }: ResumeGenerationProps) {                                                                                                                                   
-    const { profile, selectedJob, jdData, matchData: globalMatchData } = useApp();                                                                                                                                                 
-    const [resumeHtml, setResumeHtml] = useState<string>('');                                                                                                                                                                      
-    const [isLoading, setIsLoading] = useState(false);                                                                                                                                                                             
-    const [error, setError] = useState<string>('');                                                                                                                                                                                
-    const [matchResult, setMatchResult] = useState<any>(globalMatchData);                                                                                                                                                          
-                                                                                                                                                                                                                                   
-    // 如果有 profile 就可以生成简历，JD 和匹配数据是可选的                                                                                                                                                                        
-    const canGenerateResume = profile !== null;                                                                                                                                                                                    
-                                                                                                                                                                                                                                   
-    // 同步全局匹配数据到本地状态                                                                                                                                                                                                  
-    useEffect(() => {                                                                                                                                                                                                              
-      if (globalMatchData) {                                                                                                                                                                                                       
-        setMatchResult(globalMatchData);                                                                                                                                                                                           
-      }                                                                                                                                                                                                                            
-    }, [globalMatchData]);                                                                                                                                                                                                         
-                                                                                                                                                                                                                                   
-    // 加载简历预览                                                                                                                                                                                                                
-    useEffect(() => {                                                                                                                                                                                                              
-      const loadResumePreview = async () => {                                                                                                                                                                                      
-        if (!profile) return;                                                                                                                                                                                                      
-                                                                                                                                                                                                                                   
-        setIsLoading(true);                                                                                                                                                                                                        
-        try {                                                                                                                                                                                                                      
-          const result = await previewResume(profile, 'resume-ats-en', language);                                                                                                                                                  
-          let scopedHtml = (result.html || '').replace(/<style[^>]*>([\s\S]*?)<\/style>/gi, (_full, css) => {                                                                                                                      
-            const scopedCss = (css || '')                                                                                                                                                                                          
-              .replace(/\bhtml\b/g, '.resume-preview')                                                                                                                                                                             
-              .replace(/\bbody\b/g, '.resume-preview');                                                                                                                                                                            
-            return `<style>${scopedCss}</style>`;                                                                                                                                                                                  
-          });                                                                                                                                                                                                                      
-          if (theme === 'dark') {                                                                                                                                                                                                  
-            scopedHtml = scopedHtml.replace(/background(?:-color)?\s*:\s*[^;"}]+;?/gi, '');                                                                                                                                        
-          }                                                                                                                                                                                                                        
-          setResumeHtml(scopedHtml);                                                                                                                                                                                               
-        } catch (err: any) {                                                                                                                                                                                                       
-          setError(err.message || (language === 'zh' ? '加载简历预览失败' : 'Failed to load resume preview'));                                                                                                                     
-          console.error('Resume preview error:', err);                                                                                                                                                                             
-        } finally {                                                                                                                                                                                                                
-          setIsLoading(false);                                                                                                                                                                                                     
-        }                                                                                                                                                                                                                          
-      };                                                                                                                                                                                                                           
-                                                                                                                                                                                                                                   
-      if (profile) {                                                                                                                                                                                                               
-        loadResumePreview();                                                                                                                                                                                                       
-      }                                                                                                                                                                                                                            
-    }, [profile, language]);
+import { ScrollArea } from './ui/scroll-area';
+import { useApp } from '../context/AppContext';
+import { previewResume, exportResumeDocx, exportResumePdf, downloadBlob } from '../services/api';
+
+interface ResumeGenerationProps {
+  onBack: () => void;
+  onNext: () => void;
+  language: 'zh' | 'en';
+  theme: 'light' | 'dark';
+}
+
+export function ResumeGeneration({ onBack, onNext, language, theme }: ResumeGenerationProps) {
+  const { profile, selectedJob, jdData, matchData: globalMatchData } = useApp();
+  const [resumeHtml, setResumeHtml] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string>('');
+
+  // 浣跨敤鍏ㄥ眬淇濆瓨鐨勫尮閰嶆暟鎹紝濡傛灉娌℃湁鎵嶉噸鏂拌绠?  const [matchResult, setMatchResult] = useState<any>(globalMatchData);
+  
+  // 濡傛灉鏈?profile 灏卞彲浠ョ敓鎴愮畝鍘嗭紝JD 鍜屽尮閰嶆暟鎹槸鍙€夌殑
+  const canGenerateResume = profile !== null;
+
+  // 鍚屾鍏ㄥ眬鍖归厤鏁版嵁鍒版湰鍦扮姸鎬?  useEffect(() => {
+    if (globalMatchData) {
+      setMatchResult(globalMatchData);
+    }
+  }, [globalMatchData]);
+
+  // 鍔犺浇绠€鍘嗛瑙?  useEffect(() => {
+    const loadResumePreview = async () => {
+      if (!profile) return;
+      
+      setIsLoading(true);
+      try {
+        const result = await previewResume(profile, 'resume-ats-en', language);
+        // Scope any global styles in the HTML to the preview container to avoid shrinking the whole page
+        let scopedHtml = (result.html || '').replace(/<style[^>]*>([\s\S]*?)<\/style>/gi, (_full, css) => {
+          const scopedCss = (css || '')
+            .replace(/\bhtml\b/g, '.resume-preview')
+            .replace(/\bbody\b/g, '.resume-preview');
+          return `<style>${scopedCss}</style>`;
+        });
+        // In dark mode, strip inline background styles to avoid white blocks
+        if (theme === 'dark') {
+          scopedHtml = scopedHtml.replace(/background(?:-color)?\s*:\s*[^;"}]+;?/gi, '');
+        }
+        setResumeHtml(scopedHtml);
+      } catch (err: any) {
+        setError(err.message || (language === 'zh' ? '鍔犺浇绠€鍘嗛瑙堝け璐? : 'Failed to load resume preview'));
+        console.error('Resume preview error:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (profile) {
+      loadResumePreview();
+    }
+  }, [profile, language]);
+
 
   const handleDownloadDocx = async () => {
     if (!profile) return;
@@ -70,7 +72,7 @@ import { previewResume, exportResumeDocx, exportResumePdf, downloadBlob } from '
       const blob = await exportResumeDocx(profile, 'resume-ats-en', language);
       downloadBlob(blob, `resume-${profile.name || 'document'}.docx`);
     } catch (err: any) {
-      setError(err.message || (language === 'zh' ? 'DOCX 导出失败' : 'Failed to export DOCX'));
+      setError(err.message || (language === 'zh' ? 'DOCX 瀵煎嚭澶辫触' : 'Failed to export DOCX'));
       console.error('DOCX export error:', err);
     } finally {
       setIsLoading(false);
@@ -85,32 +87,32 @@ import { previewResume, exportResumeDocx, exportResumePdf, downloadBlob } from '
       const blob = await exportResumePdf(profile, 'resume-ats-en', language);
       downloadBlob(blob, `resume-${profile.name || 'document'}.pdf`);
     } catch (err: any) {
-      setError(err.message || (language === 'zh' ? 'PDF 导出失败' : 'Failed to export PDF'));
+      setError(err.message || (language === 'zh' ? 'PDF 瀵煎嚭澶辫触' : 'Failed to export PDF'));
       console.error('PDF export error:', err);
     } finally {
       setIsLoading(false);
     }
   };
   
-  const t = {                                                                                                                                                                                                                      
-    zh: {                                                                                                                                                                                                                          
-      step4: "STEP 4",                                                                                                                                                                                                             
-      title: "简历匹配生成",                                                                                                                                                                                                       
-      edit: "编辑",                                                                                                                                                                                                                
-      matchScore: "匹配度",                                                                                                                                                                                                        
-      strengths: "优势",                                                                                                                                                                                                           
-      gaps: "差距",                                                                                                                                                                                                                
-      jdInfo: "JD 信息",                                                                                                                                                                                                           
-      jobTitle: "职位标题",                                                                                                                                                                                                        
-      company: "公司",                                                                                                                                                                                                             
-      location: "地点",                                                                                                                                                                                                            
-      requirements: "职位要求",                                                                                                                                                                                                    
-      keywords: "关键词",                                                                                                                                                                                                          
-      resumePreview: "简历预览",                                                                                                                                                                                                   
-      intro: "个人简介",                                                                                                                                                                                                           
-      workExp: "工作经历",                                                                                                                                                                                                         
-      education: "教育背景"                                                                                                                                                                                                        
-    },                       
+  const t = {
+    zh: {
+      step4: "STEP 4",
+      title: "绠€鍘嗗尮閰嶇敓鎴?,
+      edit: "缂栬緫",
+      matchScore: "鍖归厤搴?,
+      strengths: "浼樺娍",
+      gaps: "宸窛",
+      jdInfo: "JD 淇℃伅",
+      jobTitle: "鑱屼綅鏍囬",
+      company: "鍏徃",
+      location: "鍦扮偣",
+      requirements: "鑱屼綅瑕佹眰",
+      keywords: "鍏抽敭璇?,
+      resumePreview: "绠€鍘嗛瑙?,
+      intro: "涓汉绠€浠?,
+      workExp: "宸ヤ綔缁忓巻",
+      education: "鏁欒偛鑳屾櫙"
+    },
     en: {
       step4: "STEP 4",
       title: "Resume Generation",
@@ -324,7 +326,7 @@ import { previewResume, exportResumeDocx, exportResumePdf, downloadBlob } from '
                         <li key={idx}>{req}</li>
                       ))}
                       {jdData.requirements.length > 3 && (
-                        <li className={`${isDark ? 'text-white' : 'text-gray-500'} italic`}>... {language === 'zh' ? `还有 ${jdData.requirements.length - 3} 条` : `and ${jdData.requirements.length - 3} more`}</li>
+                        <li className={`${isDark ? 'text-white' : 'text-gray-500'} italic`}>... {language === 'zh' ? `杩樻湁 ${jdData.requirements.length - 3} 鏉 : `and ${jdData.requirements.length - 3} more`}</li>
                       )}
                     </ul>
                   </div>
@@ -405,7 +407,7 @@ import { previewResume, exportResumeDocx, exportResumePdf, downloadBlob } from '
                       <div className="flex flex-col items-center justify-center py-12">
                         <Loader2 className={`w-12 h-12 animate-spin ${isDark ? 'text-gray-100' : 'text-gray-600'}`} />
                         <p className={`mt-4 text-sm ${isDark ? 'text-gray-300' : 'text-gray-500'}`}>
-                          {language === 'zh' ? '加载简历预览...' : 'Loading resume preview...'}
+                          {language === 'zh' ? '鍔犺浇绠€鍘嗛瑙?..' : 'Loading resume preview...'}
                         </p>
                       </div>
                     ) : canGenerateResume && resumeHtml ? (
@@ -448,7 +450,7 @@ import { previewResume, exportResumeDocx, exportResumePdf, downloadBlob } from '
                     ) : (
                       <div className="flex flex-col items-center justify-center py-12">
                         <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-                          {language === 'zh' ? '请先完成画像构建以生成简历' : 'Please complete persona building to generate resume'}
+                          {language === 'zh' ? '璇峰厛瀹屾垚鐢诲儚鏋勫缓浠ョ敓鎴愮畝鍘? : 'Please complete persona building to generate resume'}
                         </p>
                       </div>
                     )}
@@ -481,10 +483,4 @@ import { previewResume, exportResumeDocx, exportResumePdf, downloadBlob } from '
     </div>
   );
 }
-
-
-
-
-
-
 

@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { ArrowLeft, ArrowRight, Check, Briefcase, Loader2 } from 'lucide-react';
 import { Button } from './ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { Badge } from './ui/badge';
 import { motion } from 'motion/react';
 import { recommendRoles, RoleRecommendation } from '../services/api';
 import { useApp } from '../context/AppContext';
@@ -22,13 +21,16 @@ export function JobRecommendations({ onBack, onNext, onSelectJob, language, them
     zh: {
       step2: "STEP 2",
       title: "智能岗位推荐",
-      analyzing: "分析�?..",
+      analyzing: "分析中...",
       aiRecommend: "AI 推荐",
-      description: "基于您的画像，AI 将推荐最匹配的职位方�?,
-      startRecommend: "开始推�?,
+      description: "基于您的画像，AI 将推荐最匹配的职位方向",
+      startRecommend: "开始推荐",
       recommendAgain: "重新推荐",
       done: "完成",
-      keywords: "关键�?
+      keywords: "关键词",
+      noResults: "暂无推荐结果",
+      needProfile: "请先完成画像构建",
+      recommendFailed: "推荐失败"
     },
     en: {
       step2: "STEP 2",
@@ -39,18 +41,21 @@ export function JobRecommendations({ onBack, onNext, onSelectJob, language, them
       startRecommend: "Start Recommendation",
       recommendAgain: "Recommend Again",
       done: "Done",
-      keywords: "KEYWORDS"
+      keywords: "KEYWORDS",
+      noResults: "No recommendations yet",
+      needProfile: "Please complete persona building first",
+      recommendFailed: "Recommendation failed"
     }
   };
+
   const [isRecommending, setIsRecommending] = useState(false);
   const [showResults, setShowResults] = useState(false);
   const [recommendations, setRecommendations] = useState<RoleRecommendation[]>([]);
   const [error, setError] = useState<string>('');
 
-  // 不再自动清空，保持流程中的数�?
   const handleStart = async () => {
     if (!profile) {
-      setError(language === 'zh' ? '请先完成画像构建' : 'Please complete persona building first');
+      setError(language === 'zh' ? t.zh.needProfile : t.en.needProfile);
       return;
     }
     
@@ -62,7 +67,7 @@ export function JobRecommendations({ onBack, onNext, onSelectJob, language, them
       setRecommendations(result.role_recommendations);
       setShowResults(true);
     } catch (err: any) {
-      setError(err.message || (language === 'zh' ? '推荐失败' : 'Recommendation failed'));
+      setError(err.message || (language === 'zh' ? t.zh.recommendFailed : t.en.recommendFailed));
       console.error('Role recommendation error:', err);
     } finally {
       setIsRecommending(false);
@@ -82,13 +87,9 @@ export function JobRecommendations({ onBack, onNext, onSelectJob, language, them
   return (
     <div className={`flex flex-col items-center justify-center min-h-screen bg-transparent p-4 relative overflow-hidden font-sans perspective-1000 ${isDark ? 'text-gray-100' : 'text-[#1F1F1F]'}`}>
        
-       {/* --- GEOMETRIC LINES OVERLAY --- */}
-       
-       {/* ------------------------------------------ */}
-
        {/* Background Header */}
        <div className="absolute top-14 md:top-6 left-0 right-0 text-center z-10 pointer-events-none">
-        <h2 className={`text-2xl font-serif italic drop-shadow-sm tracking-tight ${isDark ? 'text-gray-200' : 'text-[#1A1A1A]'}`}>MirrorCarrer</h2>
+        <h2 className={`text-2xl font-serif italic drop-shadow-sm tracking-tight ${isDark ? 'text-gray-200' : 'text-[#1A1A1A]'}`}>MirrorCareer</h2>
         <p className={`text-[10px] tracking-[0.3em] uppercase font-semibold ${isDark ? 'text-gray-400 opacity-60' : 'text-[#444] opacity-70'}`}>CVfoR1</p>
       </div>
 
@@ -128,7 +129,7 @@ export function JobRecommendations({ onBack, onNext, onSelectJob, language, them
 
       {/* Main Content */}
       <div className="w-full max-w-4xl relative flex justify-center z-20 items-center md:items-end">
-         {/* Ghost Card - Previous Step (Step 1) */}
+         {/* Ghost Card - Previous Step */}
          <div className={`absolute left-4 top-1/2 -translate-y-1/2 -translate-x-full w-full max-w-2xl h-[70vh] backdrop-blur-xl rounded-2xl shadow-xl border opacity-40 scale-90 hidden lg:block pointer-events-none -mr-32 transform -rotate-3 mix-blend-soft-light
              ${isDark ? 'bg-black/20 border-white/10' : 'bg-white/20 border-white/30'}
          `}>
@@ -140,7 +141,7 @@ export function JobRecommendations({ onBack, onNext, onSelectJob, language, them
            </div>
         </div>
         
-        {/* Ghost Card - Next Step (Step 3) */}
+        {/* Ghost Card - Next Step */}
         <div className={`absolute right-4 top-1/2 -translate-y-1/2 translate-x-full w-full max-w-2xl h-[70vh] backdrop-blur-xl rounded-2xl shadow-xl border opacity-40 scale-90 hidden lg:block pointer-events-none -ml-32 transform rotate-3 mix-blend-soft-light
              ${isDark ? 'bg-black/20 border-white/10' : 'bg-white/20 border-white/30'}
         `}>
@@ -153,10 +154,10 @@ export function JobRecommendations({ onBack, onNext, onSelectJob, language, them
            </div>
         </div>
 
-        {/* REFLECTION UNDER THE CARD */}
+        {/* Reflection */}
         <div className={`absolute bottom-[-40px] left-4 right-4 h-16 blur-2xl rounded-[50%] scale-x-90 z-0 ${isDark ? 'bg-white/5' : 'bg-black/20'}`}></div>
 
-        {/* MAIN CARD CONTAINER - Spring Animation */}
+        {/* Main Card */}
         <motion.div
            initial={{ opacity: 0, y: 40, scale: 0.95 }}
            animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -171,23 +172,18 @@ export function JobRecommendations({ onBack, onNext, onSelectJob, language, them
               }
           `}>
           
-          {/* Tech Line Corners for Dark Mode */}
           {isDark && (
               <>
                   <div className="absolute top-0 left-0 w-8 h-8 border-l-2 border-t-2 border-white/30 z-50"></div>
                   <div className="absolute top-0 right-0 w-8 h-8 border-r-2 border-t-2 border-white/30 z-50"></div>
                   <div className="absolute bottom-0 left-0 w-8 h-8 border-l-2 border-b-2 border-white/30 z-50"></div>
                   <div className="absolute bottom-0 right-0 w-8 h-8 border-r-2 border-b-2 border-white/30 z-50"></div>
-                  
-                  {/* Tech Grid Background for Card */}
                   <div className="absolute inset-0 pointer-events-none opacity-10" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)', backgroundSize: '20px 20px' }}></div>
               </>
           )}
 
-          {/* 1. Glossy Edge Highlight (Top) */}
           <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/80 to-transparent z-50 opacity-80"></div>
           
-          {/* 2. Glass Shine (Diagonal) */}
           <div className={`absolute inset-0 bg-gradient-to-tr pointer-events-none z-10 opacity-30 group-hover:opacity-40 transition-opacity duration-1000
              ${isDark ? 'from-white/5 via-white/10 to-transparent' : 'from-white/5 via-white/20 to-transparent'}
           `}></div>
@@ -232,7 +228,6 @@ export function JobRecommendations({ onBack, onNext, onSelectJob, language, them
                </div>
                <p className={`font-medium tracking-wide drop-shadow-sm mb-4 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{t[language].description}</p>
                
-               {/* MIRROR TECH HUD BUTTON */}
                <Button 
                 onClick={handleStart}
                 className={`relative overflow-hidden text-white border px-12 py-6 text-sm font-bold tracking-wide transition-all shadow-lg hover:shadow-xl hover:scale-[1.01] active:scale-[0.99] group
@@ -243,24 +238,17 @@ export function JobRecommendations({ onBack, onNext, onSelectJob, language, them
                 `}
                 disabled={isRecommending}
               >
-                 {/* --- GEOMETRIC TECH OVERLAY --- */}
-                      
-                {/* 1. Large Rotating Arc (Right side) */}
                 <div className={`absolute top-1/2 right-[-20%] w-[120%] h-[200%] -translate-y-1/2 rounded-full border border-dashed animate-[spin_10s_linear_infinite] pointer-events-none opacity-40
                      ${isDark ? 'border-black/20' : 'border-white/10'}
                 `}></div>
                 
-                {/* 2. Thin Crosshair Lines */}
                 <div className={`absolute top-0 bottom-0 left-8 w-[1px] pointer-events-none ${isDark ? 'bg-black/10' : 'bg-white/5'}`}></div>
                 <div className={`absolute left-0 right-0 top-1/2 h-[1px] pointer-events-none ${isDark ? 'bg-black/10' : 'bg-white/5'}`}></div>
 
-                {/* 3. Corner Markers */}
                 <div className={`absolute top-1.5 left-1.5 w-2 h-2 border-l border-t pointer-events-none ${isDark ? 'border-black/30' : 'border-white/30'}`}></div>
                 <div className={`absolute bottom-1.5 right-1.5 w-2 h-2 border-r border-b pointer-events-none ${isDark ? 'border-black/30' : 'border-white/30'}`}></div>
 
-                {/* 4. Scanning Line (Subtle) */}
                 <div className={`absolute top-0 bottom-0 left-0 w-[2px] blur-[1px] animate-[shimmer_3s_infinite] pointer-events-none ${isDark ? 'bg-black/20' : 'bg-white/20'}`}></div>
-
 
                 <span className={`relative z-10 flex items-center gap-2 ${isDark ? 'text-black' : 'text-white'}`}>
                    {isRecommending && <Loader2 className="w-4 h-4 animate-spin" />}
@@ -288,7 +276,7 @@ export function JobRecommendations({ onBack, onNext, onSelectJob, language, them
 
               {recommendations.length === 0 ? (
                 <div className={`text-center py-12 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-                  {language === 'zh' ? '暂无推荐结果' : 'No recommendations yet'}
+                  {language === 'zh' ? t.zh.noResults : t.en.noResults}
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -306,7 +294,6 @@ export function JobRecommendations({ onBack, onNext, onSelectJob, language, them
                       `}
                       onClick={() => handleJobClick(rec.title)}
                     >
-                      {/* Hover Glow */}
                       <div className={`absolute inset-0 bg-gradient-to-r from-blue-50/0 via-blue-50/30 to-purple-50/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none ${isDark ? 'rounded-none' : 'rounded-xl'}`}></div>
 
                       <div className="flex items-start gap-4 relative z-10">
@@ -360,5 +347,3 @@ export function JobRecommendations({ onBack, onNext, onSelectJob, language, them
     </div>
   );
 }
-
-

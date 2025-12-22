@@ -43,7 +43,6 @@ export function PersonaBuilder({ onBack, onNext, language, theme }: PersonaBuild
   const { profile, setProfile } = useApp();
   const fileInputRef = useRef<HTMLInputElement>(null);
   
-  /* ORIGINAL_STRINGS_BROKEN
   const t = {
     zh: {
       step1: "STEP 1",
@@ -115,7 +114,7 @@ export function PersonaBuilder({ onBack, onNext, language, theme }: PersonaBuild
       }
       
       if (!selectedFile && !text.trim()) {
-        throw new Error(language === 'zh' ? '请输入文本或上传文件' : 'Please enter text or upload a file');
+        throw new Error(language === 'zh' ? '璇疯緭鍏ユ枃鏈垨涓婁紶鏂囦欢' : 'Please enter text or upload a file');
       }
       
       const result = await analyzeProfile(formData);
@@ -139,117 +138,13 @@ export function PersonaBuilder({ onBack, onNext, language, theme }: PersonaBuild
         skills: result.profile.skills || []
       };
       
-      setProfile(result.profile);
-      setIsComplete(true);
+      setProfile(result.profile); // 淇濆瓨鍘熷 profile 鍒板叏灞€鐘舵€?      setIsComplete(true);
       
       setTimeout(() => {
         setShowDetails(true);
       }, 500);
     } catch (err: any) {
       setError(err.message || (language === 'zh' ? '鍒嗘瀽澶辫触' : 'Analysis failed'));
-      console.error('Profile analysis error:', err);
-    } finally {
-      setIsAnalyzing(false);
-    }
-  };
-  */
-
-  const t = {
-    zh: {
-      step1: "STEP 1",
-      title: "画像构建",
-      done: "完成",
-      edit: "编辑",
-      collapse: "收起",
-      clear: "清空",
-      inputLabel: "自然语言输入",
-      placeholder: "在此输入或粘贴你的经历描述，AI 将自动提取关键画像信息...",
-      or: "或者",
-      fileParsing: "简历文件解析",
-      fileSupport: "支持 PDF, DOCX, HTML",
-      selectFile: "选择文件",
-      noFile: "未选择任何文件",
-      analyzing: "系统分析中...",
-      complete: "分析完成",
-      initiate: "开始分析",
-      completeText: "分析完成",
-      intro: "个人简介",
-      education: "教育背景",
-      experience: "工作经历",
-      skills: "技能"
-    },
-    en: {
-      step1: "STEP 1",
-      title: "Persona Building",
-      done: "Done",
-      edit: "Edit",
-      collapse: "Collapse",
-      clear: "Clear",
-      inputLabel: "Natural Language Input",
-      placeholder: "Enter or paste your experience description here, AI will automatically extract key persona information...",
-      or: "OR",
-      fileParsing: "Resume File Parsing",
-      fileSupport: "Supports PDF, DOCX, HTML",
-      selectFile: "Select File",
-      noFile: "No file selected",
-      analyzing: "SYSTEM ANALYZING...",
-      complete: "ANALYSIS COMPLETE",
-      initiate: "INITIATE ANALYSIS",
-      completeText: "Analysis Complete",
-      intro: "Introduction",
-      education: "Education",
-      experience: "Work Experience",
-      skills: "Skills"
-    }
-  };
-
-  const [text, setText] = useState('');
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [isComplete, setIsComplete] = useState(false);
-  const [showDetails, setShowDetails] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-  const [error, setError] = useState<string>('');
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-
-  const handleAnalyze = async () => {
-    setError('');
-    setIsAnalyzing(true);
-    try {
-      const formData = new FormData();
-      if (selectedFile) {
-        formData.append('file', selectedFile);
-      }
-      if (text.trim()) {
-        formData.append('free_text', text.trim());
-      }
-      if (!selectedFile && !text.trim()) {
-        throw new Error(language === 'zh' ? '请输入文本或上传文件' : 'Please enter text or upload a file');
-      }
-
-      const result = await analyzeProfile(formData);
-      const personaData: PersonaData = {
-        name: result.profile?.name || '',
-        contact: result.profile?.contact || result.profile?.email || result.profile?.phone || '',
-        intro: result.profile?.intro || result.profile?.summary || '',
-        education: (result.profile?.education || []).map((edu: any) => ({
-          school: edu.school || '',
-          period: edu.period || `${edu.start || ''} - ${edu.end || ''}`.trim(),
-          degree: edu.degree || edu.major || ''
-        })),
-        experience: (result.profile?.experience || []).map((exp: any) => ({
-          company: exp.company || '',
-          period: exp.period || `${exp.start || ''} - ${exp.end || ''}`.trim(),
-          role: exp.role || '',
-          details: exp.bullets || exp.details || []
-        })),
-        skills: result.profile?.skills || []
-      };
-
-      setProfile(result.profile || personaData);
-      setIsComplete(true);
-      setTimeout(() => setShowDetails(true), 300);
-    } catch (err: any) {
-      setError(err?.message || (language === 'zh' ? '分析失败' : 'Analysis failed'));
       console.error('Profile analysis error:', err);
     } finally {
       setIsAnalyzing(false);
@@ -323,7 +218,7 @@ export function PersonaBuilder({ onBack, onNext, language, theme }: PersonaBuild
 
       {/* Background Header */}
       <div className="absolute top-14 md:top-6 left-0 right-0 text-center z-10 pointer-events-none">
-        <h2 className={`text-2xl font-serif italic drop-shadow-sm tracking-tight ${isDark ? 'text-gray-200' : 'text-[#1A1A1A]'}`}>MirrorCareer</h2>
+        <h2 className={`text-2xl font-serif italic drop-shadow-sm tracking-tight ${isDark ? 'text-gray-200' : 'text-[#1A1A1A]'}`}>MirrorCarrer</h2>
         <p className={`text-[10px] tracking-[0.3em] uppercase font-semibold ${isDark ? 'text-gray-400 opacity-60' : 'text-[#444] opacity-70'}`}>CVfoR1</p>
       </div>
 
@@ -634,12 +529,12 @@ export function PersonaBuilder({ onBack, onNext, language, theme }: PersonaBuild
                             </div>
                           ) : (
                             <>
-                              <h1 className={`text-3xl font-black mb-2 tracking-tight ${isDark ? 'text-white' : 'text-[#1A1A1A]'}`}>{profile.name || (language === 'zh' ? '未命名' : 'Unnamed')}</h1>
+                              <h1 className={`text-3xl font-black mb-2 tracking-tight ${isDark ? 'text-white' : 'text-[#1A1A1A]'}`}>{profile.name || '鏈懡鍚?}</h1>
                               <div className={`text-xs font-mono mb-6 flex items-center gap-2 px-3 py-1.5 w-fit
                                  ${isDark ? 'bg-white/10 text-gray-300 rounded-none' : 'bg-gray-100 text-gray-500 rounded-lg'}
                               `}>
                                 <span className={`w-2 h-2 rounded-full inline-block animate-pulse shadow-[0_0_8px_rgba(0,0,0,0.2)] ${isDark ? 'bg-white/80' : 'bg-black/80'}`}></span>
-                                {profile.contact || profile.email || profile.phone || (language === 'zh' ? '暂无联系方式' : 'No contact info')}
+                                {profile.contact || profile.email || profile.phone || '鏃犺仈绯绘柟寮?}
                               </div>
                             </>
                           )}
@@ -684,7 +579,7 @@ export function PersonaBuilder({ onBack, onNext, language, theme }: PersonaBuild
                                   onClick={handleAddEducation}
                                   className={`h-7 px-3 text-xs ${isDark ? 'bg-white/10 border-white/20 text-white hover:bg-white/20' : 'bg-white border-gray-200'}`}
                                 >
-                                  + {language === 'zh' ? '添加' : 'Add'}
+                                  + {language === 'zh' ? '娣诲姞' : 'Add'}
                                 </Button>
                               )}
                             </div>
@@ -699,8 +594,7 @@ export function PersonaBuilder({ onBack, onNext, language, theme }: PersonaBuild
                                         onClick={() => handleRemoveEducation(idx)}
                                         className="absolute top-2 right-2 h-6 px-2 text-xs text-red-500 hover:text-red-700 hover:bg-red-100"
                                       >
-                                        ✕
-                                      </Button>
+                                        鉁?                                      </Button>
                                     )}
                                     <Input 
                                       value={edu.school || ''} 
@@ -764,7 +658,7 @@ export function PersonaBuilder({ onBack, onNext, language, theme }: PersonaBuild
                                   onClick={handleAddExperience}
                                   className={`h-7 px-3 text-xs ${isDark ? 'bg-white/10 border-white/20 text-white hover:bg-white/20' : 'bg-white border-gray-200'}`}
                                 >
-                                  + {language === 'zh' ? '添加' : 'Add'}
+                                  + {language === 'zh' ? '娣诲姞' : 'Add'}
                                 </Button>
                               )}
                             </div>
@@ -781,8 +675,7 @@ export function PersonaBuilder({ onBack, onNext, language, theme }: PersonaBuild
                                         onClick={() => handleRemoveExperience(idx)}
                                         className="absolute top-0 right-0 h-6 px-2 text-xs text-red-500 hover:text-red-700 hover:bg-red-100 z-10"
                                       >
-                                        ✕
-                                      </Button>
+                                        鉁?                                      </Button>
                                     )}
                                     <Input 
                                       value={exp.company || ''} 
@@ -857,7 +750,7 @@ export function PersonaBuilder({ onBack, onNext, language, theme }: PersonaBuild
                             <div className="flex items-center justify-between">
                               <h3 className={`font-bold text-sm flex items-center gap-2 uppercase tracking-wider opacity-80 ${isDark ? 'text-gray-200' : 'text-gray-900'}`}>
                                  <span className={`w-1.5 h-1.5 rounded-full ${isDark ? 'bg-white' : 'bg-black'}`}></span>
-                                {language === 'zh' ? '技能' : 'Skills'}
+                                {language === 'zh' ? '鎶€鑳? : 'Skills'}
                               </h3>
                             </div>
                             <div className={`p-4 rounded-lg ${isDark ? 'bg-white/5 border border-white/10' : 'bg-gray-50 border border-gray-100'}`}>
@@ -870,7 +763,7 @@ export function PersonaBuilder({ onBack, onNext, language, theme }: PersonaBuild
                                       skills: e.target.value.split(',').map(s => s.trim()).filter(Boolean),
                                     })}
                                     className={`text-sm h-10 ${isDark ? 'bg-black/40 border-white/10 text-white rounded-none' : 'bg-white border-gray-200 text-gray-800 rounded-lg'}`}
-                                    placeholder={language === 'zh' ? '用逗号分隔，如：Python, React, SQL' : 'Comma separated, e.g. Python, React, SQL'}
+                                    placeholder={language === 'zh' ? '鐢ㄩ€楀彿鍒嗛殧锛屽锛歅ython, React, SQL' : 'Comma separated, e.g. Python, React, SQL'}
                                   />
                                   <div className="flex flex-wrap gap-2">
                                     {(profile.skills || []).map((s, idx) => (
@@ -890,7 +783,7 @@ export function PersonaBuilder({ onBack, onNext, language, theme }: PersonaBuild
                                     ))
                                   ) : (
                                     <span className={isDark ? 'text-gray-400' : 'text-gray-500'}>
-                                      {language === 'zh' ? '暂无技能' : 'No skills added'}
+                                      {language === 'zh' ? '鏆傛湭娣诲姞鎶€鑳? : 'No skills added'}
                                     </span>
                                   )}
                                 </div>
