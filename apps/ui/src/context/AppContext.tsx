@@ -5,6 +5,7 @@ interface JDData {
   title?: string;
   company?: string;
   location?: string;
+  responsibilities?: string[];
   requirements?: string[];
   keywords?: string[];
   description?: string;
@@ -69,4 +70,3 @@ export function useApp() {
   }
   return context;
 }
-

@@ -16,6 +16,10 @@ class FetchJDInput(BaseModel):
     jd_url: str
     debug: bool = False
     render: bool = False
+    description: Optional[str] = None
+    title: Optional[str] = None
+    company: Optional[str] = None
+    location: Optional[str] = None
 
 
 class FetchJDOutput(BaseModel):

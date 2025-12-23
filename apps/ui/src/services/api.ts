@@ -65,6 +65,19 @@ export interface Job {
   posted_at?: string;
   keywords?: string[];
   description?: string;
+  job_url?: string;
+  job_url_direct?: string;
+  company_url?: string;
+  company_url_direct?: string;
+  job_type?: string;
+  job_level?: string;
+  company_industry?: string;
+  salary_source?: string;
+  interval?: string;
+  min_amount?: number;
+  max_amount?: number;
+  currency?: string;
+  emails?: string;
 }
 
 export interface RoleRecommendation {
@@ -143,8 +156,6 @@ export function streamJobs(params: {
   titles: string[];
   keywords?: string[];
   locations?: string[];
-  linkedinCount?: number;
-  seekCount?: number;
   limit?: number;
   onJob: (job: Job) => void;
   onProgress: (delivered: number, requested: number) => void;
@@ -155,9 +166,7 @@ export function streamJobs(params: {
     sessionId = '',
     titles,
     keywords = [],
-    locations = ['AU'],
-    linkedinCount = 5,
-    seekCount = 5,
+    locations = [],
     limit = 10,
     onJob,
     onProgress,
@@ -170,8 +179,6 @@ export function streamJobs(params: {
     titles: titles.join(','),
     keywords: keywords.join(','),
     locations: locations.join(','),
-    linkedin: linkedinCount.toString(),
-    seek: seekCount.toString(),
     limit: limit.toString(),
   });
 
@@ -222,15 +229,26 @@ export function streamJobs(params: {
 /**
  * 获取并解析职位描述
  */
-export async function fetchJD(jdUrl: string, render: boolean = false): Promise<{
-  title?: string;
-  company?: string;
-  location?: string;
-  responsibilities?: string[];
-  requirements?: string[];
-  benefits?: string[];
-  keywords?: string[];
-}> {
+export async function fetchJD(
+  jdUrl: string,
+  renderOrOptions: boolean | {
+    render?: boolean;
+    description?: string;
+    title?: string;
+    company?: string;
+    location?: string;
+  } = false
+  ): Promise<{
+    title?: string;
+    company?: string;
+    location?: string;
+    responsibilities?: string[];
+    requirements?: string[];
+    benefits?: string[];
+    keywords?: string[];
+    description?: string;
+  }> {
+  const options = typeof renderOrOptions === 'boolean' ? { render: renderOrOptions } : renderOrOptions;
   const response = await fetch(`${API_BASE_URL}/jd/fetch`, {
     method: 'POST',
     headers: {
@@ -238,7 +256,11 @@ export async function fetchJD(jdUrl: string, render: boolean = false): Promise<{
     },
     body: JSON.stringify({
       jd_url: jdUrl,
-      render,
+      render: options.render || false,
+      description: options.description,
+      title: options.title,
+      company: options.company,
+      location: options.location,
       debug: false,
     }),
   });
@@ -266,8 +288,10 @@ export async function matchProfileToJD(
     title?: string;
     company?: string;
     location?: string;
+    responsibilities?: string[];
     requirements?: string[];
     keywords?: string[];
+    description?: string;
   }
 ): Promise<MatchResult> {
   const response = await fetch(`${API_BASE_URL}/matching/match`, {
@@ -277,7 +301,14 @@ export async function matchProfileToJD(
     },
     body: JSON.stringify({
       profile,
-      jd,
+      jd: {
+        title: jd.title,
+        company: jd.company,
+        location: jd.location,
+        responsibilities: jd.responsibilities,
+        requirements: jd.requirements,
+        keywords: jd.keywords,
+      },
     }),
   });
 
@@ -390,4 +421,3 @@ export function downloadBlob(blob: Blob, filename: string): void {
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
 }
-

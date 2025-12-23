@@ -15,23 +15,54 @@ interface JobSearchProps {
   initialSearchTerm?: string;
   language: 'zh' | 'en';
   theme: 'light' | 'dark';
+  stepOverride?: number;
 }
 
-export function JobSearch({ onBack, onNext, initialSearchTerm = '', language, theme }: JobSearchProps) {
+export function JobSearch({ onBack, onNext, initialSearchTerm = '', language, theme, stepOverride }: JobSearchProps) {
   const { sessionId, setSelectedJob, jobs: globalJobs, setJobs: setGlobalJobs, profile, setJDData, setMatchData } = useApp();
   const cleanupRef = useRef<(() => void) | null>(null);
   const [analyzingJobId, setAnalyzingJobId] = useState<string | null>(null);
   const [matchingJobId, setMatchingJobId] = useState<string | null>(null);
+
+  const extractDescriptionLines = (text: string): string[] => {
+    if (!text) return [];
+    const cleaned = text.replace(/<[^>]+>/g, ' ');
+    return cleaned
+      .split(/(?:\r?\n|\u2022|\*|;)/)
+      .map((line) => line.trim())
+      .filter((line) => line.length > 4);
+  };
+
+  const enrichJD = (rawJD: any, job: Job) => {
+    const merged = { ...(rawJD || {}) };
+    const fallbackLines = extractDescriptionLines(job.description || '');
+    if (!merged.description && job.description) {
+      merged.description = job.description;
+    }
+    if ((!merged.responsibilities || merged.responsibilities.length === 0) && fallbackLines.length) {
+      merged.responsibilities = fallbackLines.slice(0, 60);
+    }
+    if ((!merged.requirements || merged.requirements.length === 0) && fallbackLines.length) {
+      merged.requirements = fallbackLines.slice(0, 60);
+    }
+    if ((!merged.keywords || merged.keywords.length === 0) && job.keywords && job.keywords.length) {
+      merged.keywords = job.keywords;
+    }
+    if (!merged.title) merged.title = job.title;
+    if (!merged.company) merged.company = job.company;
+    if (!merged.location) merged.location = job.location;
+    return merged;
+  };
   
   const t = {
     zh: {
       step3: "STEP 3",
       title: "精准职位检索",
       jobTitle: "职位标题",
-      region: "地区",
+      keywords: "地区",
+      region: "国家",
       selectRegion: "选择地区",
-      linkedinCount: "LinkedIn 数量",
-      seekCount: "Seek 数量",
+      resultsCount: "结果数量",
       searching: "搜索中...",
       startSearch: "开始搜索",
       continueSearch: "继续搜索",
@@ -46,10 +77,10 @@ export function JobSearch({ onBack, onNext, initialSearchTerm = '', language, th
       step3: "STEP 3",
       title: "Precision Job Search",
       jobTitle: "Job Title",
-      region: "Region",
+      keywords: "Region",
+      region: "Country",
       selectRegion: "Select Region",
-      linkedinCount: "LinkedIn Count",
-      seekCount: "Seek Count",
+      resultsCount: "Result Count",
       searching: "Searching...",
       startSearch: "Start Search",
       continueSearch: "Continue Search",
@@ -64,9 +95,9 @@ export function JobSearch({ onBack, onNext, initialSearchTerm = '', language, th
   const [isSearching, setIsSearching] = useState(false);
   const [hasResults, setHasResults] = useState(globalJobs.length > 0);
   const [jobTitle, setJobTitle] = useState(initialSearchTerm || '');
-  const [location, setLocation] = useState('AU');
-  const [linkedinCount, setLinkedinCount] = useState(5);
-  const [seekCount, setSeekCount] = useState(5);
+  const [region, setRegion] = useState('Sydney');
+  const [country, setCountry] = useState('AU');
+  const [resultCount, setResultCount] = useState(10);
   const [progress, setProgress] = useState({ delivered: 0, requested: 0 });
 
   const jobs = globalJobs;
@@ -105,10 +136,11 @@ export function JobSearch({ onBack, onNext, initialSearchTerm = '', language, th
     cleanupRef.current = streamJobs({
       sessionId,
       titles: [jobTitle],
-      locations: [location],
-      linkedinCount,
-      seekCount,
-      limit: linkedinCount + seekCount,
+      keywords: [],
+      locations: [
+        [region, country].filter(Boolean).join(', ') || region || country,
+      ],
+      limit: resultCount,
       onJob: (job) => {
         setJobs((prev) => [...prev, job]);
       },
@@ -137,19 +169,23 @@ export function JobSearch({ onBack, onNext, initialSearchTerm = '', language, th
   const handleJobSelect = async (job: Job) => {
     setSelectedJob(job);
     
-    // 如果是LinkedIn职位且有profile，自动分析和匹配
-    const isLinkedInJob = (job.source || '').toLowerCase().includes('linkedin') || 
-                          (job.jd_url || job.url || '').toLowerCase().includes('linkedin.com');
-    
-    if (isLinkedInJob && profile) {
+    // 有profile时自动分析和匹配
+    if (profile) {
       const jobUrl = job.jd_url || job.url;
       if (jobUrl) {
         try {
           // 自动获取JD数据和匹配
-          const jdData = await fetchJD(jobUrl, true);
-          setJDData(jdData);
+          const jdData = await fetchJD(jobUrl, {
+            render: true,
+            description: job.description,
+            title: job.title,
+            company: job.company,
+            location: job.location,
+          });
+          const enrichedJD = enrichJD(jdData, job);
+          setJDData(enrichedJD);
           
-          const matchResult = await matchProfileToJD(profile, jdData);
+          const matchResult = await matchProfileToJD(profile, enrichedJD);
           setMatchData(matchResult);
         } catch (error) {
           console.error('Auto-analyze failed:', error);
@@ -171,8 +207,14 @@ export function JobSearch({ onBack, onNext, initialSearchTerm = '', language, th
 
     setAnalyzingJobId(job.id || job.hash);
     try {
-      const jdData = await fetchJD(jobUrl, true);
-      setJDData(jdData);
+      const jdData = await fetchJD(jobUrl, {
+        render: true,
+        description: job.description,
+        title: job.title,
+        company: job.company,
+        location: job.location,
+      });
+      setJDData(enrichJD(jdData, job));
       alert(language === 'zh' ? 'JD 分析完成！' : 'JD Analysis Complete!');
     } catch (error: any) {
       console.error('Analyze JD error:', error);
@@ -198,11 +240,18 @@ export function JobSearch({ onBack, onNext, initialSearchTerm = '', language, th
     setMatchingJobId(job.id || job.hash);
     try {
       // 先获取JD数据
-      const jdData = await fetchJD(jobUrl, true);
-      setJDData(jdData);
+      const jdData = await fetchJD(jobUrl, {
+        render: true,
+        description: job.description,
+        title: job.title,
+        company: job.company,
+        location: job.location,
+      });
+      const enrichedJD = enrichJD(jdData, job);
+      setJDData(enrichedJD);
       
       // 再进行匹配
-      const matchResult = await matchProfileToJD(profile, jdData);
+      const matchResult = await matchProfileToJD(profile, enrichedJD);
       setMatchData(matchResult);
       
       alert(language === 'zh' ? `匹配完成！匹配度: ${matchResult.score}%` : `Match Complete! Score: ${matchResult.score}%`);
@@ -316,7 +365,7 @@ export function JobSearch({ onBack, onNext, initialSearchTerm = '', language, th
                ${isDark ? 'bg-black/20 border-white/10' : 'bg-white/30 border-gray-200/40'}
           `}>
           <div className="flex items-center gap-4">
-            <span className={`text-xs font-bold tracking-wide uppercase drop-shadow-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{t[language].step3}</span>
+            <span className={`text-xs font-bold tracking-wide uppercase drop-shadow-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{stepOverride ? `STEP ${stepOverride}` : t[language].step3}</span>
             <CardTitle className={`text-lg font-bold drop-shadow-sm ${isDark ? 'text-white' : 'text-[#1F1F1F]'}`}>{t[language].title}</CardTitle>
           </div>
         </CardHeader>
@@ -345,10 +394,29 @@ export function JobSearch({ onBack, onNext, initialSearchTerm = '', language, th
                 </div>
               </div>
               <div className="space-y-2">
+                <label className={`text-xs font-semibold ml-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>{t[language].keywords}</label>
+                <div className="relative group/input">
+                  <div className={`absolute -inset-0.5 rounded-lg blur opacity-30 group-hover/input:opacity-60 transition duration-500
+                      ${isDark ? 'bg-white/20' : 'bg-gradient-to-r from-gray-200 to-gray-300'}
+                  `}></div>
+                  <Input 
+                    value={region} 
+                    onChange={(e) => setRegion(e.target.value)}
+                    placeholder={language === 'zh' ? '如：Sydney' : 'e.g., Sydney'}
+                    className={`relative border-0 focus:ring-0 shadow-[inset_2px_2px_4px_rgba(0,0,0,0.05)] h-10 transition-all
+                        ${isDark 
+                           ? 'bg-black/40 text-white placeholder:text-gray-500 focus:bg-black/60 rounded-none' 
+                           : 'bg-white/80 focus:bg-white rounded-lg'
+                        }
+                    `} 
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
                 <label className={`text-xs font-semibold ml-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>{t[language].region}</label>
                 <Input 
-                  value="AU"
-                  disabled
+                  value={country}
+                  onChange={(e) => setCountry(e.target.value)}
                   className={`border-0 focus:ring-0 text-center shadow-[inset_2px_2px_4px_rgba(0,0,0,0.05)] h-10
                       ${isDark ? 'bg-black/40 text-white rounded-none' : 'bg-white/80 rounded-lg'}
                   `}
@@ -356,28 +424,15 @@ export function JobSearch({ onBack, onNext, initialSearchTerm = '', language, th
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className={`text-xs font-semibold ml-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>{t[language].linkedinCount}</label>
+                <label className={`text-xs font-semibold ml-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>{t[language].resultsCount}</label>
                 <Input 
                   type="number" 
-                  min="0" 
-                  max="50"
-                  value={linkedinCount} 
-                  onChange={(e) => setLinkedinCount(parseInt(e.target.value) || 0)}
-                  className={`border-0 focus:ring-0 text-center shadow-[inset_2px_2px_4px_rgba(0,0,0,0.05)] h-10
-                      ${isDark ? 'bg-black/40 text-white focus:bg-black/60 rounded-none' : 'bg-white/80 rounded-lg'}
-                  `} 
-                />
-              </div>
-              <div className="space-y-2">
-                <label className={`text-xs font-semibold ml-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>{t[language].seekCount}</label>
-                <Input 
-                  type="number" 
-                  min="0" 
-                  max="50"
-                  value={seekCount} 
-                  onChange={(e) => setSeekCount(parseInt(e.target.value) || 0)}
+                  min="1" 
+                  max="100"
+                  value={resultCount} 
+                  onChange={(e) => setResultCount(parseInt(e.target.value) || 1)}
                   className={`border-0 focus:ring-0 text-center shadow-[inset_2px_2px_4px_rgba(0,0,0,0.05)] h-10
                       ${isDark ? 'bg-black/40 text-white focus:bg-black/60 rounded-none' : 'bg-white/80 rounded-lg'}
                   `} 
@@ -478,17 +533,6 @@ export function JobSearch({ onBack, onNext, initialSearchTerm = '', language, th
             )}
 
             {jobs.map((job, index) => {
-              // 调试：打印每个job的source字段
-              const isLinkedIn = (job.source || '').toLowerCase().includes('linkedin') || (job.jd_url || job.url || '').toLowerCase().includes('linkedin.com');
-              const isSeek = (job.source || '').toLowerCase().includes('seek') || (job.jd_url || job.url || '').toLowerCase().includes('seek.com');
-              console.log(`Job ${index}:`, { 
-                title: job.title, 
-                source: job.source, 
-                url: job.jd_url || job.url,
-                isLinkedIn,
-                isSeek
-              });
-              
               return (
               <motion.div
                 key={job.hash || job.id || index}
@@ -504,23 +548,9 @@ export function JobSearch({ onBack, onNext, initialSearchTerm = '', language, th
               >
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-2">
-                    {(job.source || '').toLowerCase().includes('linkedin') || (job.jd_url || job.url || '').toLowerCase().includes('linkedin.com') ? (
-                      <Badge className="bg-[#0077B5] hover:bg-[#00669c] text-[10px] px-2 py-0.5 h-5 rounded shadow-sm text-white font-medium tracking-wide flex items-center gap-1">
-                        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
-                        </svg>
-                        LINKEDIN
-                      </Badge>
-                    ) : null}
-                    {(job.source || '').toLowerCase().includes('seek') || (job.jd_url || job.url || '').toLowerCase().includes('seek.com') ? (
-                      <Badge
-                        className="bg-[#E60278] hover:bg-[#C50065] text-[10px] px-2 py-0.5 h-5 rounded shadow-sm font-medium tracking-wide flex items-center gap-1 text-white border-0"
-                        style={{ backgroundColor: '#E60278', color: '#fff' }}
-                      >
-                        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/>
-                        </svg>
-                        SEEK
+                    {job.source ? (
+                      <Badge className="bg-[#2D2D2D] hover:bg-black text-[10px] px-2 py-0.5 h-5 rounded shadow-sm text-white font-medium tracking-wide">
+                        {job.source.toUpperCase()}
                       </Badge>
                     ) : null}
                   </div>
@@ -540,10 +570,7 @@ export function JobSearch({ onBack, onNext, initialSearchTerm = '', language, th
                 )}
               </p>
               
-              {/* 判断是否为LinkedIn职位 */}
-              {((job.source || '').toLowerCase().includes('linkedin') || (job.jd_url || job.url || '').toLowerCase().includes('linkedin.com')) ? (
-                /* LinkedIn 职位：显示4个按钮 */
-                <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-3">
                 <Button 
                   variant="default" 
                   onClick={() => {
@@ -605,39 +632,6 @@ export function JobSearch({ onBack, onNext, initialSearchTerm = '', language, th
                   <FileOutput className="w-3 h-3 mr-2" /> {t[language].generateResume}
                 </Button>
               </div>
-              ) : (
-                /* Seek 职位：只显示2个按钮 */
-                <div className="grid grid-cols-2 gap-3">
-                <Button 
-                  variant="default" 
-                  onClick={() => {
-                    const url = job.jd_url || job.url;
-                    if (url) window.open(url, '_blank');
-                  }}
-                  disabled={!job.jd_url && !job.url}
-                  className={`text-xs h-10 w-full font-medium shadow-md hover:shadow-lg transition-all relative overflow-hidden group
-                      ${isDark ? 'bg-white text-black hover:bg-gray-200 rounded-none' : 'bg-[#2D2D2D] text-white hover:bg-black rounded-lg'}
-                  `}
-                >
-                  <div className="absolute inset-0 opacity-0 group-hover:opacity-20 transition-opacity duration-700 pointer-events-none" style={{ backgroundImage: `linear-gradient(${isDark ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.5)'} 1px, transparent 1px), linear-gradient(90deg, ${isDark ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.5)'} 1px, transparent 1px)`, backgroundSize: '10px 10px' }}></div>
-                  <div className={`absolute top-0 left-[-100%] w-[50%] h-full bg-gradient-to-r skew-x-[-20deg] group-hover:animate-[shimmer_2s_infinite]
-                      ${isDark ? 'from-transparent via-black/10 to-transparent' : 'from-transparent via-white/10 to-transparent'}
-                  `}></div>
-                  
-                  <span className="relative z-10 flex items-center justify-center"><ExternalLink className="w-3 h-3 mr-2" /> {t[language].openLink}</span>
-                </Button>
-                
-                <Button 
-                  variant="default" 
-                  onClick={() => handleJobSelect(job)}
-                  className={`text-xs h-10 w-full font-medium shadow-md hover:shadow-lg transition-all
-                      ${isDark ? 'bg-[#222] text-white border border-white/20 hover:bg-[#333] rounded-none' : 'bg-[#1A1A1A] text-white hover:bg-black rounded-lg'}
-                  `}
-                >
-                  <FileOutput className="w-3 h-3 mr-2" /> {t[language].generateResume}
-                </Button>
-              </div>
-              )}
             </motion.div>
             )}
             )}
@@ -667,5 +661,3 @@ export function JobSearch({ onBack, onNext, initialSearchTerm = '', language, th
     </div>
   );
 }
-
-

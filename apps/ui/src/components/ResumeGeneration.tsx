@@ -5,17 +5,18 @@ import { Button } from './ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { ScrollArea } from './ui/scroll-area';                                                                                                                                                                                   
 import { useApp } from '../context/AppContext';                                                                                                                                                                                  
-import { previewResume, exportResumeDocx, exportResumePdf, downloadBlob } from '../services/api';                                                                                                                                
+import { previewResume, exportResumeDocx, exportResumePdf, downloadBlob, matchProfileToJD } from '../services/api';
                                                                                                                                                                                                                                    
-  interface ResumeGenerationProps {                                                                                                                                                                                                
-    onBack: () => void;                                                                                                                                                                                                            
-    onNext: () => void;                                                                                                                                                                                                            
-    language: 'zh' | 'en';                                                                                                                                                                                                         
-    theme: 'light' | 'dark';                                                                                                                                                                                                       
-  }                                                                                                                                                                                                                                
+interface ResumeGenerationProps {
+  onBack: () => void;
+  onNext: () => void;
+  language: 'zh' | 'en';
+  theme: 'light' | 'dark';
+  stepOverride?: number;
+}
                                                                                                                                                                                                                                    
-  export function ResumeGeneration({ onBack, onNext, language, theme }: ResumeGenerationProps) {
-    const { profile, selectedJob, jdData, matchData: globalMatchData } = useApp();
+export function ResumeGeneration({ onBack, onNext, language, theme, stepOverride }: ResumeGenerationProps) {
+    const { profile, selectedJob, jdData, matchData: globalMatchData, setJDData, setMatchData } = useApp();
     const [resumeHtml, setResumeHtml] = useState<string>('');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string>('');
@@ -24,18 +25,57 @@ import { previewResume, exportResumeDocx, exportResumePdf, downloadBlob } from '
     // 如果有 profile 就可以生成简历，JD 和匹配数据是可选的
     const canGenerateResume = profile !== null;
     
-    // 判断是否为LinkedIn职位
-    const isLinkedInJob = selectedJob && (
-      (selectedJob.source || '').toLowerCase().includes('linkedin') || 
-      (selectedJob.jd_url || selectedJob.url || '').toLowerCase().includes('linkedin.com')
-    );
+    const hasJob = Boolean(selectedJob || jdData || matchResult);
+
+    const extractDescriptionLines = (text: string): string[] => {
+      if (!text) return [];
+      const cleaned = text.replace(/<[^>]+>/g, ' ');
+      return cleaned
+        .split(/(?:\r?\n|\u2022|\*|;)/)
+        .map((line) => line.trim())
+        .filter((line) => line.length > 4);
+    };
+
+    const fallbackJD = selectedJob
+      ? {
+          title: selectedJob.title,
+          company: selectedJob.company,
+          location: selectedJob.location,
+          description: selectedJob.description,
+          responsibilities: extractDescriptionLines(selectedJob.description || '').slice(0, 60),
+          requirements: extractDescriptionLines(selectedJob.description || '').slice(0, 60),
+          keywords: selectedJob.keywords || [],
+        }
+      : null;
+
+    const jdDisplay = jdData || fallbackJD;
                                                                                                                                                                                                                                    
     // 同步全局匹配数据到本地状态                                                                                                                                                                                                  
-    useEffect(() => {                                                                                                                                                                                                              
-      if (globalMatchData) {                                                                                                                                                                                                       
-        setMatchResult(globalMatchData);                                                                                                                                                                                           
-      }                                                                                                                                                                                                                            
-    }, [globalMatchData]);                                                                                                                                                                                                         
+    useEffect(() => {
+      if (globalMatchData) {
+        setMatchResult(globalMatchData);
+      }
+    }, [globalMatchData]);
+
+    useEffect(() => {
+      if (!jdData && fallbackJD && setJDData) {
+        setJDData(fallbackJD);
+      }
+    }, [jdData, fallbackJD, setJDData]);
+
+    useEffect(() => {
+      if (!profile || !jdDisplay || matchResult) return;
+      const run = async () => {
+        try {
+          const result = await matchProfileToJD(profile, jdDisplay);
+          setMatchData(result);
+          setMatchResult(result);
+        } catch (err) {
+          console.error('Auto match failed:', err);
+        }
+      };
+      run();
+    }, [profile, jdDisplay, matchResult, setMatchData]);
                                                                                                                                                                                                                                    
     // 加载简历预览                                                                                                                                                                                                                
     useEffect(() => {                                                                                                                                                                                                              
@@ -225,7 +265,7 @@ import { previewResume, exportResumeDocx, exportResumePdf, downloadBlob } from '
                ${isDark ? 'bg-black/20 border-white/10' : 'bg-white/30 border-gray-200/40'}
           `}>
           <div className="flex items-center gap-4">
-            <span className={`text-xs font-bold tracking-wide uppercase drop-shadow-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{t[language].step4}</span>
+            <span className={`text-xs font-bold tracking-wide uppercase drop-shadow-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{stepOverride ? `STEP ${stepOverride}` : t[language].step4}</span>
             <CardTitle className={`text-lg font-bold drop-shadow-sm ${isDark ? 'text-white' : 'text-[#1F1F1F]'}`}>{t[language].title}</CardTitle>
           </div>
         </CardHeader>
@@ -279,9 +319,9 @@ import { previewResume, exportResumeDocx, exportResumePdf, downloadBlob } from '
             </Button>
           </div>
 
-          {/* JD Information Card - 仅 LinkedIn 职位显示 */}
-          {isLinkedInJob && jdData && (
-            <div className={`backdrop-blur-md p-5 shadow-[0_10px_30px_-15px_rgba(0,0,0,0.1)] border transition-all
+          {/* JD Information Card */}
+          {hasJob && jdDisplay && (
+            <div className={`backdrop-blur-md p-4 shadow-[0_10px_30px_-15px_rgba(0,0,0,0.1)] border transition-all
                 ${isDark 
                    ? 'bg-white/5 border-white/10 hover:bg-white/8 text-white rounded-none' 
                    : 'bg-white/70 border-white/50 hover:bg-white/80 text-[#1F1F1F] rounded-2xl'
@@ -291,56 +331,48 @@ import { previewResume, exportResumeDocx, exportResumePdf, downloadBlob } from '
                 <FileText className="w-4 h-4" />
                 {t[language].jdInfo}
               </h3>
-              <div className={`space-y-2 text-xs ${isDark ? 'text-white' : ''}`}>
-                {jdData.title && (
-                  <div>
-                    <span className={`font-semibold ${isDark ? 'text-white' : 'text-gray-700'}`}>{t[language].jobTitle}: </span>
-                    <span className={isDark ? 'text-white' : 'text-gray-600'}>{jdData.title}</span>
-                  </div>
-                )}
-                {jdData.company && (
-                  <div>
-                    <span className={`font-semibold ${isDark ? 'text-white' : 'text-gray-700'}`}>{t[language].company}: </span>
-                    <span className={isDark ? 'text-white' : 'text-gray-600'}>{jdData.company}</span>
-                  </div>
-                )}
-                {jdData.location && (
-                  <div>
-                    <span className={`font-semibold ${isDark ? 'text-white' : 'text-gray-700'}`}>{t[language].location}: </span>
-                    <span className={isDark ? 'text-white' : 'text-gray-600'}>{jdData.location}</span>
-                  </div>
-                )}
-                {jdData.keywords && jdData.keywords.length > 0 && (
-                  <div>
-                    <span className={`font-semibold block mb-1 ${isDark ? 'text-white' : 'text-gray-700'}`}>{t[language].keywords}:</span>
-                    <div className="flex flex-wrap gap-1">
-                      {jdData.keywords.slice(0, 10).map((keyword, idx) => (
-                        <span key={idx} className={`px-2 py-0.5 text-[10px] rounded ${isDark ? 'bg-white/10 text-white' : 'bg-gray-100 text-gray-700'}`}>
-                          {keyword}
-                        </span>
-                      ))}
+              <div className="h-32 overflow-y-auto pr-2">
+                <div className={`space-y-2 text-xs ${isDark ? 'text-white' : ''}`}>
+                  {jdDisplay.title && (
+                    <div>
+                      <span className={`font-semibold ${isDark ? 'text-white' : 'text-gray-700'}`}>{t[language].jobTitle}: </span>
+                      <span className={isDark ? 'text-white' : 'text-gray-600'}>{jdDisplay.title}</span>
                     </div>
-                  </div>
-                )}
-                {jdData.requirements && jdData.requirements.length > 0 && (
-                  <div>
-                    <span className={`font-semibold block mb-1 ${isDark ? 'text-white' : 'text-gray-700'}`}>{t[language].requirements}:</span>
-                    <ul className={`list-disc list-inside space-y-1 text-[11px] leading-relaxed ${isDark ? 'text-white' : 'text-gray-600'}`}>
-                      {jdData.requirements.slice(0, 3).map((req, idx) => (
-                        <li key={idx}>{req}</li>
-                      ))}
-                      {jdData.requirements.length > 3 && (
-                        <li className={`${isDark ? 'text-white' : 'text-gray-500'} italic`}>... {language === 'zh' ? `还有 ${jdData.requirements.length - 3} 条` : `and ${jdData.requirements.length - 3} more`}</li>
-                      )}
-                    </ul>
-                  </div>
-                )}
+                  )}
+                  {jdDisplay.company && (
+                    <div>
+                      <span className={`font-semibold ${isDark ? 'text-white' : 'text-gray-700'}`}>{t[language].company}: </span>
+                      <span className={isDark ? 'text-white' : 'text-gray-600'}>{jdDisplay.company}</span>
+                    </div>
+                  )}
+                  {jdDisplay.location && (
+                    <div>
+                      <span className={`font-semibold ${isDark ? 'text-white' : 'text-gray-700'}`}>{t[language].location}: </span>
+                      <span className={isDark ? 'text-white' : 'text-gray-600'}>{jdDisplay.location}</span>
+                    </div>
+                  )}
+                  {jdDisplay.requirements && jdDisplay.requirements.length > 0 && (
+                    <div>
+                      <span className={`font-semibold block mb-1 ${isDark ? 'text-white' : 'text-gray-700'}`}>{t[language].requirements}:</span>
+                      <ul className={`list-disc list-inside space-y-1 text-[11px] leading-relaxed ${isDark ? 'text-white' : 'text-gray-600'}`}>
+                        {jdDisplay.requirements.map((req, idx) => (
+                          <li key={idx}>{req}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {(!jdDisplay.requirements || jdDisplay.requirements.length === 0) && (
+                    <div className={`text-[11px] ${isDark ? 'text-gray-300' : 'text-gray-500'}`}>
+                      {language === 'zh' ? '暂无职位要求' : 'No requirements found'}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           )}
 
-          {/* Match Analysis Card - 仅 LinkedIn 职位显示 */}
-          {isLinkedInJob && matchResult ? (
+          {/* Match Analysis Card */}
+          {hasJob && matchResult ? (
             <div className={`backdrop-blur-md p-5 shadow-[0_10px_30px_-15px_rgba(0,0,0,0.1)] border flex flex-row transition-all group/match
                 ${isDark 
                    ? 'bg-white/5 border-white/10 hover:bg-white/8 text-white rounded-none' 
@@ -384,7 +416,7 @@ import { previewResume, exportResumeDocx, exportResumePdf, downloadBlob } from '
                   </div>
                </div>
             </div>
-          ) : isLinkedInJob ? (
+          ) : hasJob ? (
             <div className={`backdrop-blur-md p-5 shadow-[0_10px_30px_-15px_rgba(0,0,0,0.1)] border text-center text-xs
                 ${isDark 
                    ? 'bg-white/5 border-white/10 text-gray-400 rounded-none' 

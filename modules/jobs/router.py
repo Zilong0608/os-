@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Query
+﻿from fastapi import APIRouter, Query
 from fastapi.responses import StreamingResponse
 from .schemas import SearchJobsInput, SearchJobsOutput, JobQuery
 from .search import search_jobs
@@ -15,7 +15,6 @@ def search(input: SearchJobsInput):
 
 @router.post("/next-batch", response_model=SearchJobsOutput)
 def next_batch(input: SearchJobsInput):
-    # Same signature, caller provides updated exclude_hashes to avoid overlap
     return search_jobs(input)
 
 
@@ -34,23 +33,20 @@ def stream_get(
     session_id: str = Query(default=""),
     titles: str = Query(default=""),
     keywords: str = Query(default=""),
-    locations: str = Query(default="AU"),
-    seek: int = Query(default=5, ge=0, le=50),
-    linkedin: int = Query(default=5, ge=0, le=50),
+    locations: str = Query(default=""),
     limit: int = Query(default=10, ge=1, le=100),
 ):
-    import logging
-    logger = logging.getLogger("jobs.router")
-    logger.info(f"🔍 收到搜索请求 - LinkedIn: {linkedin}, Seek: {seek}, Limit: {limit}, Titles: {titles}")
-    
     input = SearchJobsInput(
         session_id=session_id or None,
-        query=JobQuery(titles=_csv(titles), keywords=_csv(keywords), locations=_csv(locations)),
-        allocation={"seek": seek, "linkedin": linkedin},
+        query=JobQuery(
+            titles=_csv(titles),
+            keywords=_csv(keywords),
+            locations=_csv(locations),
+        ),
+        allocation={},
         limit=limit,
         exclude_hashes=[],
     )
-    
-    logger.info(f"📊 分配策略: {input.allocation}")
+
     generator = stream_jobs(input)
     return StreamingResponse(generator, media_type="text/event-stream")

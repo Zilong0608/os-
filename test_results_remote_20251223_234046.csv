@@ -1,0 +1,545 @@
+﻿id,site,job_url,job_url_direct,title,company,location,date_posted,job_type,salary_source,interval,min_amount,max_amount,currency,is_remote,job_level,job_function,listing_type,emails,description,company_industry,company_url,company_logo,company_url_direct,company_addresses,company_num_employees,company_revenue,company_description,skills,experience_range,company_rating,company_reviews_count,vacancy_count,work_from_home_type
+in-6b7b4e3cf89d3851,indeed,https://au.indeed.com/viewjob?jk=6b7b4e3cf89d3851,https://cba.wd3.myworkdayjobs.com/en-US/commbank_careers/job/Sydney-CBD-Area/Principal-Software-Engineer--AI-Enabled-Platforms_REQ251831,"Principal Software Engineer, AI-Enabled Platforms",Commonwealth Bank of Australia,"Sydney, NSW, AU",2025-12-19,fulltime,,,,,,True,,,,,"* ### **Work with world\-class engineering teams and cutting\-edge tech**
+* ### **Limitless earning and development opportunities**
+* ### **Competitive Remuneration, Staff Benefit and Bonus**
+* ### **Flexibility of a hybrid and work/life balance culture**
+
+**See Yourself in the Team**
+============================
+
+The Sales and CRM Crew, part of our ITB Domain in Institutional Banking, deliver cutting\-edge technology solutions for business and institutional customers across the relationship\-managed segments of the bank.
+
+
+We are embarking on a multi\-year digital transformation programme to modernise core platforms and uplift engineering excellence across the organisation.
+
+
+Our mission is to empower businesses to thrive using the technology of tomorrow, supported by decoupled, resilient and reliable systems.  
+
+
+
+**Your Impact and Contribution**
+================================
+
+As a Principal Software Engineer, you will be part of a newly created and highly specialised cross\-functional squad of world\-class Engineers, Data Scientists, and Product Owners, tasked with creating the next generation of resilient, decoupled and highly available digital platforms that support our relationship\-managed clients.
+
+
+In this role, you will be pivotal to the delivery of intelligent systems and lead the creation of next\-generation platforms that synthesise complex data signals, orchestrate agentic AI and deliver timely insights that empower Relationship Managers to provide outstanding customer outcomes. In achieving this, you may expect to:
+
+
+* Lead the architecture and delivery of a Recommendation Service and supporting microservices (feature store, retrieval, orchestration) that expose explainable insights via secure APIs.
+* Design, build and operate cloud‑native APIs and event‑driven services on AWS (EKS/ECS/Lambda) for scalable, resilient banker experiences.
+* Orchestrate agentic AI (LLMs, embeddings, retrieval) in Python, integrating models with domain services and data contracts.
+* Productionise models with Data Scientists; implement safety, guardrails and human‑in‑the‑loop decision support.
+* Implement real‑time pipelines with Kafka and IBM MQ; define data flows from ingestion to recommendations and Customer Hub.
+* Apply SRE discipline \- define and own SLIs/SLOs/SLAs; instrument with OpenTelemetry, Prometheus, Grafana for full observability.
+* Design and maintain CI/CD pipelines with advanced deployment strategies (blue\-green, canary) and enable ephemeral test environments for rapid, reliable validation.
+* Mentor, influence, and set engineering standards.
+* Simplify legacy integrations and drive pragmatic platform evolution.
+* E mbed security, performance and maintainability from design through run.
+
+**About You**
+=============
+
+A deeply experienced and highly skilled Principal Software Engineer, you will have demonstrable success in delivering impactful and innovative software solutions within large, complex, multi\-tenanted and highly regulated enterprise environments.
+
+
+This role requires a thought leader who combines deep technical expertise with strong influence, coaching ability and strategic decision making. An innovative, adaptive and solution\-driven Principal Engineer, with the ability to influence engineering excellence and uplift standards across the crew.
+
+
+The ideal candidate thrives in ambiguity, shaping strategy and leading the delivery of high\-impact intelligent systems in high\-stakes environments.
+
+
+***Your Technical Skills \& Experience***
+
+* Full\-stack (Java or Python back end; React front end preferred) developer and Software Engineer with expertise across the full SDLC.
+* Proven ability to build and integrate agentic AI solutions using Python, LLMs and retrieval techniques.
+* Hands\-on experience with event streaming and messaging (Kafka, IBM MQ). Expertise in AWS hosting and operations, including secure deployments and performance optimisation.
+* Solid DevSecOps foundations, including secure CI/CD pipelines (GitHub Actions).
+* Strong SRE mindset: defining SLIs/SLOs/SLAs and implementing observability tooling (OpenTelemetry, Prometheus, Grafana).
+* Prac tical experience embedding security controls and operational readiness throughout delivery .
+* E xposure to CRM integration (Salesforce Core/Marketing Cloud) is desirable, though not essential .
+
+**What’s in it for you**
+========================
+
+* ***Shape the Future:*** Lead the design of an AI\-enabled decisioning platform that transforms how bankers serve institutional clients. Your work will power critical customer outcomes across one of Australia’s largest financial institutions.
+* ***Hybrid Flexibility:*** Balance in\-office collaboration with remote work options in a supportive, inclusive culture.
+* ***Continuous Growth:*** Work alongside world\-class tech and global award\-winning engineering teams and platforms. Access to limitless learning and professional development opportunities, and exposure to AI, cloud\-native patterns, and SRE practices.
+
+  
+
+If you're ready to be part of a forward\-thinking company that values innovation, teamwork, apply now and help shape the future of fintech with us!
+
+
+If you're already part of the Commonwealth Bank Group (including Bankwest, x15ventures), you'll need to apply through Sidekick to submit a valid application. We’re keen to support you with the next step in your career.
+
+
+We're aware of some accessibility issues on this site, particularly for screen reader users. We want to make finding your dream job as easy as possible, so if you require additional support please contact HR Direct on 1800 989 696\.
+
+
+Advertising End Date: 29/01/2026",,https://au.indeed.com/cmp/Commonwealth-Bank-of-Australia-9607b3c5,https://d2q79iu7y748jz.cloudfront.net/s/_squarelogo/256x256/c44ff8415d3c9544069ff26b7a17e4cd,http://www.commbank.com.au,Sydney,"10,000+",$5B to $10B (USD),Or purpose is to improve the financial well-being of our customers and communities.,,,,,,
+in-9aa5c853213ce2bd,indeed,https://au.indeed.com/viewjob?jk=9aa5c853213ce2bd,https://apply.workable.com/j/7AC46E32A2,Principal SRE Engineer,Sleek Tech Pte Ltd,"Remote, AU",2025-12-16,fulltime,,,,,,True,,,,,"Through proprietary software and AI, along with a focus on customer delight, Sleek makes the back\-office easy for micro SMEs.
+
+
+We give Entrepreneurs time back to focus on what they love doing \- growing their business and being with customers. With a surging number of Entrepreneurs globally, we are innovating in a highly lucrative space.
+
+
+We operate 3 business segments:
+
+**Corporate Secretary**: Automating the company incorporation, secretarial, filing, Nominee Director, mailroom and immigration processes via custom online robots and SleekSign. We are the market leaders in Singapore with \~5% market share of all new business incorporations
+
+**Accounting \& Bookkeeping**: Redefining what it means to do Accounting, Bookkeeping, Tax and Payroll thanks to our proprietary SleekBooks ledger, AI tools and exceptional customer service
+
+**FinTech payments**: Overcoming a key challenge for Entrepreneurs by offering digital banking services to new businesses
+
+
+Sleek launched in 2017 and now has around 15,000 customers across our offices in Singapore, Hong Kong, Australia and the UK. We have around 500 staff with an intact startup mindset.
+
+
+We have recently raised Series B financing off the back of \>70% compound annual growth in Revenue over the last 5 years. Sleek has been recognised by The Financial Times, The Straits Times, Forbes and LinkedIn as one of the fastest growing companies in Asia.
+
+
+Backed by world\-class investors, we are on track to be one of the few cash flow positive, tech\-enabled unicorns based out of Singapore.
+
+
+At Sleek, we are on a mission to streamline operations and elevate customer experience through intelligent automation and modern engineering.
+
+
+**About the Role:**
+
+**Mission:**
+
+
+At Sleek, we are on a mission to streamline operations and elevate customer experience through intelligent automation and modern engineering. We are seeking a Principal SRE Engineer who will be a key individual contributor responsible for architecting, building, and scaling Sleek’s next\-generation infrastructure and AI\-powered capabilities.
+
+
+As one of Sleek’s most senior technical contributors, you will partner closely with Product, Engineering, and AI teams to define our infrastructure strategy, design resilient cloud architectures, and ensure our platforms remain secure, scalable, and high\-performing. You will play a central role in integrating AI systems into production environments, enabling efficient delivery, observability, and reliability across Sleek’s products and internal operations.
+
+
+You will ensure:
+
+* **High\-quality, secure, and scalable infrastructure** capable of supporting modern applications and advanced AI workloads
+* **Robust automation** across CI/CD, infrastructure provisioning, and operations to increase reliability and reduce manual overhead
+* **Thoughtful and pragmatic integration of AI** into operational workflows to improve efficiency, detect anomalies, and accelerate delivery
+* **Reliable systems engineering practices**, including monitoring, incident response, performance tuning, and capacity planning
+* **Strong DevOps standards,** including reproducibility, testing, documentation, and operational excellence
+* **Clear technical communication and cross\-team alignment** to enable predictable delivery and collaborative problem\-solving
+* **Mentorship and technical leadership** that elevates platform engineering, DevOps maturity, and overall engineering quality across the organisation
+
+**Outcomes:**
+
+**Strengthen Reliability, Scalability, and Infrastructure Health**
+
+* Conduct a full review of Sleek’s cloud infrastructure and propose a roadmap for reliability and scalability improvements
+* Lead upgrades or redesigns of core platform components such as networking, containers, orchestration, or databases
+* Improve incident response processes, SLIs, SLOs, and on\-call readiness.
+
+**Introduce Platform Enhancements to Support AI Workloads**
+
+* Ensure platform and infrastructure are capable of supporting AI\-powered features
+* Build or refine pipelines for model hosting, embeddings, vector search, or related AI services if required
+* Implement monitoring and guardrails for AI service performance, cost, and stability
+
+**Increase Engineering Velocity Through Automation**
+
+* Enhance CI/CD pipelines for speed, safety, and reliability
+* Introduce infrastructure automation, testing automation, and deployment tooling to reduce manual steps
+* Champion modern DevOps and AI\-assisted tooling to improve engineering productivity.
+
+**Improve Observability and Operational Excellence**
+
+* Strengthen logging, monitoring, tracing, and alerting across services
+* Reduce noisy alerts and improve the signal\-to\-noise ratio for incidents
+* Implement readiness checks, runbooks, and automated recovery paths for critical services
+
+**Security and Compliance Improvements**
+
+* Ensure secure configuration, secrets management, access control, and identity management
+* Implement automated security scanning, dependency monitoring, and hardened pipeline practices
+* Prepare platform\-level requirements needed for reliable and secure AI usage
+
+**Mentor and Support Engineering Teams**
+
+* Coach engineers on cloud best practices, reliability, and operational readiness
+* Lead architecture reviews, workshops, and platform knowledge\-sharing session
+* Build tooling, templates, and patterns that elevate team productivity
+
+**Requirements**
+
+
+To do this you will have:
+
+* 8\+ years of progressive experience in Site Reliability Engineering (SRE)
+* 5\+ years of strong, hands\-on experience across multi\-cloud environments such as AWS, GCP, Azure including expertise in networking, compute, storage, security, and cost optimization.
+* 5\+ years of deep expertise in containerization and orchestration (e.g., Kubernetes, EKS, ECS)
+* 8\+ years of extensive experience with Infrastructure as Code (IaC) (e.g., Terraform, Pulumi, CloudFormation).
+* System Reliability: Proven ability to design, build, and operate highly reliable, scalable production systems utilizing advanced Zero\-Downtime Deployment Patterns (e.g., Blue/Green, Canary, progressive delivery).
+* Modern Delivery \& Tooling: Expertise in modernizing deployments via GitOps practices (e.g., ArgoCD, Flux) and building Self\-Service Developer Platforms that enable engineering efficiency (e.g., environment automation, internal tooling).
+* Networking \& Edge Routing: Experience implementing and managing Multi\-Cloud API Gateways and Edge Routing solutions (e.g., Kong, Traefik, Cloudflare, multi\-cluster ingress).
+* Security \& Hardening: Strong background in platform security, including secrets management, Identity and Access Control (IAM), and Runtime/Security Hardening with tools like Falco/eBPF and WAFs.
+* Observability: Solid understanding and practical experience with modern observability stacks (e.g., Prometheus, OpenTelemetry, OpenSearch, ELK, CloudWatch).
+* AI/ML Infrastructure: Experience supporting or deploying AI/ML workloads (e.g., model inference, vector databases, GPU workloads), or strong familiarity with the infrastructure requirements for these systems.
+* Mentorship \& Communication: Excellent communication and collaboration skills with a proven ability to describe complex infrastructure decisions clearly and a background in mentoring engineers and driving improvements in engineering practices.
+* Development Expertise: Familiarity with modern programming languages like Node.js, NestJS, and Python is highly desirable for extending DevOps capabilities or integrating tooling.
+
+
+Behavioural fit is also important at Sleek, and we will be looking for candidates that have a proven track record of embodying the below attributes in their recent roles:
+
+**Ownership:** This shows reliability and helps build trust within the team. We move fast and need to know that everyone will see things through to completion and proactively help to get things back on track when challenges arise. Accountability is really important to us.
+
+**Humility:** There is so much we don’t know. Humility allows for open\-mindedness to feedback and a willingness to learn from others. It paves the way for collaboration and creates a positive work environment. It is a key ingredient of self awareness and emotional intelligence.
+
+**Structured Thinking**: Our business is complex with many layers (many services, many countries, many cultures). Regardless of whether you’re more analytical or creative in nature, being able to show sound judgement is important to us. It ensures solutions are pragmatic and balance the needs of the organisation, team and customers.
+
+**Attention to detail**: You’ll be managing multiple, complex workstreams from numerous stakeholders. It will be important for you to keep track of everything and notice when information is missing or inconsistent.
+
+**Excellent listener and clear communicator**: We have a variety of nationalities and for many people, English isn’t their first language. For you to excel, you’ll need to be present in your calls and make sure you properly receive and thoughtfully send messages to others in the business.
+
+ **About the interview process**
+
+The successful candidate will participate in the below interview stages (note that the order might be different to what you read below).
+
+
+We anticipate the process to last no more than 3 weeks from start to finish. Whether the interviews are held over video call or in person will depend on your location and the role.
+
+
+**Screening call**  
+
+A \~30 minute chat with our Talent Acquisition team to learn more about you, your background, and what you’re looking for.
+
+**Take Home Assessment**
+
+
+A 2\-3 hour take\-home assessment that would assess your SRE Skills.
+
+**Technical Interview**  
+
+A \~90 minute technical interview with Delivery Lead and/or Head of Engineering
+
+**Final interview**  
+
+A closing conversation with our CTO, giving you the opportunity to ask any final questions and hear more about our vision and priorities.
+
+**Offer \+ references**  
+
+We’ll make a non\-binding offer verbally or by email, followed by a couple of short phone or video calls with references that you provide.
+
+**Requirement for background screening**
+
+
+Please be aware that Sleek is a regulated entity and as such is required to perform different levels of background checks on staff depending on their role.
+
+
+This may include using external vendors to verify the below:
+
+* Your education
+* Any criminal history
+* Any political exposure
+* Any bankruptcy or adverse credit history
+
+
+We will ask for your consent before conducting these checks. Depending on your role at Sleek, an adverse result on one of these checks may prohibit you from passing probation.
+
+
+By submitting a job application, you confirm that you have read and agree to our Data Privacy Statement for Candidates, found at sleek.com.
+
+**Benefits**
+
+
+Some other great things about working at Sleek…
+
+**Humility and kindness**: Humility is a core attribute we hire for, which means we have a culture of not taking ourselves too seriously and being able to laugh. Kindness is also incredibly important. We are committed to creating and nurturing a diverse and inclusive environment.
+
+**Flexibility**: You will be required to work from the office at least 2–3 days per week if you are based in Singapore or Australia. For all other hiring locations, the role will be fully remote, with work from home five days a week. If you need to start early or start late to cater to your family or other needs, we don’t mind, so long as you get your work done and proactively communicate. You can also work fully remote from anywhere in the world for 1 month each year
+
+**Financial benefits**: We pay competitive market salaries and provide staff with generous paid time off and holiday schedules. Certain staff at Sleek are also eligible for our employee share ownership plan and can share in the upside of our stellar growth trajectory as we work toward listing on a prominent stock exchange in the Asia Pacific region.
+
+**Personal growth**: You’ll get a lot of responsibility and autonomy at Sleek \- we move at a fast pace so you’ll be making decisions, making mistakes and learning. There’s also a range of internal and external facing training programmes we run. We’re also at the forefront of utilising AI in our space and are developing a regional centre of AI excellence. It is our intention that if you leave Sleek, you leave as a more well\-rounded person and professional.
+
+
+Sleek is also a proudly certified B Corp. Since we started our journey in 2017, we’ve been committed to building Sleek as a force for good. In just over 5 years, we’ve joined a community of industry leaders like Patagonia, Ben \& Jerry's, and P\&G who are building an inclusive, equitable, and a regenerative economy. We have planted over 29,271 trees to reforest our ecosystem and saved 7 tons of paper from landfills by processing over 1\.4M pages through SleekSign. We aim to be Carbon Neutral by 2030\.",,https://au.indeed.com/cmp/Sleek-Tech-Pte-Ltd,https://d2q79iu7y748jz.cloudfront.net/s/_squarelogo/256x256/86295face65699ee065f2b91f1db1330,,,,,,,,,,,
+in-d90b91007d75ebf1,indeed,https://au.indeed.com/viewjob?jk=d90b91007d75ebf1,https://forwoodsafety.bamboohr.com/careers/121?source=indeed&src=indeed&postedDate=2025-12-15,AI Co-Pilot Full Stack Developer,FORWOOD SAFETY,"Brisbane, QLD, AU",2025-12-15,fulltime,,,,,,True,,,,,"At Forwood Safety, we’re on a mission to make every shift safer and every workplace fatality\-free. We’re seeking a **Software Engineer** who can combine strong engineering skills with AI\-assisted development to deliver high\-quality software at speed.
+
+  
+
+
+**Deliver Life\-Saving Software**
+
+
+
+Ship high\-impact features across our **React/Remix \+ TypeScript front end** and **NestJS/AWS microservices back end**—building tools that directly help safety teams spot and eliminate critical risks before they turn deadly.
+
+  
+
+
+**Work Smarter with AI**
+
+
+
+Use tools like **Cursor, GitHub Copilot, and other AI copilots** as part of your daily workflow to accelerate delivery. You’ll know how to get the most out of them—structuring prompts, validating outputs, and ensuring the code you ship is robust, clean, and production\-ready.
+
+
+**Raise the Bar on Quality**
+
+
+
+Apply strong engineering discipline:
+
+
+* Write and maintain **unit tests (Jest or equivalent)** and **end\-to\-end tests (Playwright)**
+* Use static analysis, peer reviews, and continuous improvement of AI prompts
+* Build software that is secure, maintainable, and enterprise\-ready
+
+
+**Shape the Future of Safety Tech**
+
+
+
+Share your knowledge by mentoring teammates in AI\-driven workflows and contributing to a culture that values quality, velocity, and innovation.
+
+  
+
+
+**Why Forwood?**
+
+
+* **Mission\-Driven Impact:** Your code will directly enable safety leaders to protect their people.
+* **AI\-First Workflow:** We embrace AI tooling as a core part of how we work—accelerating development without compromising quality.
+* **Cutting\-Edge Stack:** React, Remix, NestJS, TypeScript, Terraform, Docker, AWS ECS/RDS, and AI copilots.
+* **Collaborative Environment:** A tight\-knit, remote\-first team that values mentorship, continuous learning, and open communication.
+
+  
+
+
+**What We’re Looking For**
+
+
+* Strong experience with **React/Remix, NestJS, and TypeScript**
+* Daily use of **AI copilots** to ship faster, safer, and cleaner code
+* Proven ability to validate and secure AI\-assisted code with testing and reviews
+* A production mindset: everything you build is **robust, maintainable, and enterprise\-ready**
+* Based in **Australia** (remote role, with AU timezone collaboration)
+
+
+If you’re excited to combine solid engineering practices with AI\-assisted workflows—and to use that capability to help prevent workplace fatalities—we’d love to hear from you.
+
+  
+
+
+
+This role is 100% remote but must be based in Australia.",,https://au.indeed.com/cmp/Forwood-Safety,,,,,,,,,,,,
+in-fd7ba4d12f0e68af,indeed,https://au.indeed.com/viewjob?jk=fd7ba4d12f0e68af,https://jobs.smartrecruiters.com/Canva/6000000000732064-staff-backend-software-engineer-user-platform-,Staff Backend Software Engineer (User Platform),Canva,"Sydney, NSW, AU",2025-12-02,fulltime,,,,,,True,,,,,"**Job Description** **Join the team redefining how the world experiences design.**
+
+
+Hey, g'day, mabuhay, kia ora, 你好, hallo, vítejte!
+
+
+Thanks for stopping by. We know job hunting can be a little time consuming and you're probably keen to find out what's on offer, so we'll get straight to the point.
+
+**What you’d be doing in this role**
+
+
+As Canva scales change continues to be part of our DNA. But we like to think that's all part of the fun. So this will give you the flavour of the type of things you'll be working on when you start, but this will likely evolve.
+
+
+As a Senior Backend Engineer in one of the Apps API Platform teams, you will play a crucial role in developing and refining the Apps SDK, ensuring that external apps can integrate natively into Canva’s product ecosystem. You will be responsible for architecting new full\-stack capabilities, shaping API designs, and collaborating with both internal teams and external developers to build a world\-class app experience.
+
+
+As a technical leader, you’ll drive large\-scale projects from ideation to execution, making key architectural decisions that impact Canva’s developer community. You will also mentor other engineers, share best practices, and help define the future of backend development within the Ecosystem Supergroup.
+
+**At the moment, this role is focused on:**
+
+
+You will have the opportunity to work on some of the most essential and high performance backend systems at Canva: the User Platform. How do we scale our backend systems to enable Canva to support 10x the amount of users we have today? This is our mission
+
+
+We decompose existing services, we build up new ones from scratch and care about software design. We constantly improve the way how we get the most performance out of AWS resources and along the way we ship new features to improve the user experience for Enterprise and Education customers and their advanced organisational needs.
+
+
+Join us on this exciting journey!
+
+* Collaborate as part of a backend focussed team of engineers to extend and scale out the backbone of Canva's Microservice landscape: the User Platform
+* Responsible for high performance systems to authenticate and manage users, avatars, groups and teams
+* Collaborate with the team to envision, design \& plan, build and maintain new useful and reusable building blocks for the User Platform
+* Communicate with stakeholder teams to evaluate requirements, align timelines and optimise for value to the customers
+* Focus on improving the experience for customers with large teams in Enterprise and Education environments
+
+**You're probably a match if you have experience**
+
+* Working collaboratively with teammates and communicating effectively
+* Firmly grounded computer science and engineering fundamentals, including concurrency, multithreading, data structures, solution design, architecture, and design patterns
+* Strong background in designing, building and running high\-performance Java backend systems
+* Problem Solver mentality
+* Good writing and verbal communication skills
+* SQL experience
+
+
+Nice to have's
+
+* Experience with Authentication and Permission systems is a huge plus
+* DynamoDB experience is a plus
+
+**About the team**
+
+
+In User Platform, we break up existing services and build new ones from scratch to prepare our architecture for the future. We care about software design and its impact on the user. We constantly aim to get the most performance out of AWS resources, and along the way, we ship new features to improve the user experience for Enterprise and Education users.
+
+**About the role**
+
+
+As a Staff Backend Engineer, you will be collaborating to build up and scale the backbone of Canva’s User Management: the User Platform. The user platform team plays an essential role in keeping our services stable and scalable for our millions of daily users.
+
+
+You will be involved in designing, building, and maintaining new features to improve and extend the experience for Pro and Enterprise teams and organisations, namely User \& Team Management, Single Sign On, Roles \& Groups, Permissions and much more to come. This role entails constant collaboration with other teams across Canva, giving you a lot of exposure to what other teams are working on and giving you the opportunity to connect the dots.
+
+**Other stuff to know**
+
+
+We make hiring decisions based on your experience, skills and passion, as well as how you can enhance Canva and our culture. When you apply, please tell us the pronouns you use and any reasonable adjustments you may need during the interview process.
+
+
+We celebrate all types of skills and backgrounds at Canva so even if you don’t feel like your skills quite match what’s listed above \- we still want to hear from you!
+
+
+Please note that interviews are conducted virtually.",,https://au.indeed.com/cmp/Canva,https://d2q79iu7y748jz.cloudfront.net/s/_squarelogo/256x256/12da4182669ca396685c179572cbcecd,https://www.canva.com/en_au/,Surry Hills,51 to 200,$5M to $25M (USD),Canva is changing the way the world designs.,,,,,,
+in-a9c6dcd2ef0da692,indeed,https://au.indeed.com/viewjob?jk=a9c6dcd2ef0da692,https://jobs.humanpixel.com.au/jobs/Careers/592999000009583001/Systems-Administrator?source=CareerSite,Systems Administrator,Human Pixel,"Sydney, NSW, AU",2025-05-15,"fulltime, contract",,,,,,True,,,,,"### **Job Information**
+
+
+Date Opened
+
+
+05/15/2025
+Job Type
+
+
+Full time
+Industry
+
+
+Technology
+Remote Job
+
+
+### **Job Description**
+
+
+This is a remote position.
+
+### **Job Ad: Systems Administrator – WHM, cPanel, LAMP \& .NET Hosting Management**
+
+  
+
+
+**Location:** Sydney, Australia  
+
+**Employment Type:** Contract  
+
+**Company:** Human Pixel  
+
+  
+
+  
+
+#### **About Us:**
+
+  
+
+Human Pixel is a leading technology solutions provider specialising in innovative software development, intelligent automation, and business transformation. We pride ourselves on delivering exceptional digital experiences that drive efficiency and growth for our clients across various industries.
+
+  
+
+  
+
+#### **The Role:**
+
+  
+
+We are seeking a **Systems Administrator** with strong expertise in **WHM, cPanel, LAMP stack, and .NET hosting management** to join our dynamic team. This role is crucial for ensuring the smooth operation, security, and scalability of our hosting environments, enabling our development and support teams to deliver outstanding solutions to our clients.
+
+  
+
+  
+
+#### **Key Responsibilities:**
+
+  
+
+* Manage and maintain **WHM/cPanel** hosting environments, ensuring optimal performance and uptime.
+  
+* Oversee **LAMP stack** configurations (Linux, Apache, MySQL, PHP) for hosting websites and applications.
+  
+* Administer **.NET hosting** environments, including deployment, security, and troubleshooting.
+  
+* Implement server monitoring, backups, and disaster recovery plans to ensure data integrity and continuity.
+  
+* Perform regular updates, patching, and vulnerability assessments to maintain server security.
+  
+* Troubleshoot hosting and application issues, collaborating with developers to resolve technical problems.
+  
+* Optimise server performance, handling load balancing, and resource allocation.
+  
+* Document system configurations, processes, and procedures for internal reference and auditing.
+  
+* Support deployment processes for new applications and system updates.
+  
+
+  
+
+  
+
+### **Requirements**
+
+#### **Requirements:**
+
+  
+
+* Proven experience as a **Systems Administrator** or similar role, focusing on **WHM, cPanel, LAMP, and .NET** environments.
+  
+* Strong understanding of **Linux\-based servers** and **Windows Server environments**.
+  
+* Expertise in **server performance tuning, security hardening, and monitoring tools**.
+  
+* Familiarity with **DNS management, SSL certificate deployment, and email server configurations**.
+  
+* Proficiency with **backup and recovery solutions**.
+  
+* Excellent problem\-solving skills and attention to detail.
+  
+* Strong written and verbal communication skills.
+  
+* Ability to work autonomously and as part of a collaborative team.
+  
+
+#### **Desirable Skills:**
+
+  
+
+* Knowledge of **cloud hosting environments** (AWS, Azure, or Google Cloud).
+  
+* Experience with **automation tools** such as Ansible, Puppet, or Chef.
+  
+* Familiarity with **containerisation technologies** like Docker.
+  
+* Understanding of **CI/CD pipelines** and **DevOps principles**.
+  
+
+  
+
+  
+
+### **Benefits**
+
+
+#### **Why Join Us?**
+
+  
+
+* Competitive salary and benefits package.
+  
+* Opportunities for career growth and professional development.
+  
+* Work with a talented and supportive team in a collaborative environment.
+  
+* Exposure to diverse projects across various industries.
+  
+* Be part of an innovative company that values creativity, initiative, and excellence.",,https://au.indeed.com/cmp/Human-Pixel,,,,,,,,,,,,

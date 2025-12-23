@@ -8,7 +8,14 @@ router = APIRouter()
 
 @router.post("/fetch", response_model=FetchJDOutput)
 def fetch(input: FetchJDInput):
-    result = fetch_and_parse(input.jd_url, render=input.render)
+    result = fetch_and_parse(
+        input.jd_url,
+        render=input.render,
+        description=input.description,
+        title=input.title,
+        company=input.company,
+        location=input.location,
+    )
     if isinstance(result, tuple):
         jd, dbg = result
     else:

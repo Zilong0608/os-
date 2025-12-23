@@ -5,13 +5,14 @@ import { Check, Loader2 } from 'lucide-react';
 interface StepProgressProps {
     currentStep: number;
     theme: 'light' | 'dark';
+    steps?: Array<{ id: number; label: string; fullLabel: string }>;
 }
 
-export const StepProgress = ({ currentStep, theme }: StepProgressProps) => {
+export const StepProgress = ({ currentStep, theme, steps: stepsOverride }: StepProgressProps) => {
     const isDark = theme === 'dark';
     
     // Map step numbers to labels
-    const steps = [
+    const steps = stepsOverride || [
         { id: 1, label: "INIT", fullLabel: "PERSONA BUILDER" },
         { id: 2, label: "ANALYSIS", fullLabel: "JOB ANALYSIS" },
         { id: 3, label: "SEARCH", fullLabel: "MARKET SCAN" },
@@ -103,7 +104,7 @@ export const StepProgress = ({ currentStep, theme }: StepProgressProps) => {
 
             {/* Total Progress Text - Smaller */}
             <div className={`text-[8px] tracking-[0.2em] font-mono opacity-40 uppercase ${isDark ? 'text-white' : 'text-black'}`}>
-                System Status: Phase {currentStep}/4
+                System Status: Phase {currentStep}/{steps.length}
             </div>
         </div>
     );

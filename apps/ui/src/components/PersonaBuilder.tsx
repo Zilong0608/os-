@@ -37,9 +37,10 @@ interface PersonaBuilderProps {
   onNext: () => void;
   language: 'zh' | 'en';
   theme: 'light' | 'dark';
+  stepOverride?: number;
 }
 
-export function PersonaBuilder({ onBack, onNext, language, theme }: PersonaBuilderProps) {
+export function PersonaBuilder({ onBack, onNext, language, theme, stepOverride }: PersonaBuilderProps) {
   const { profile, setProfile } = useApp();
   const fileInputRef = useRef<HTMLInputElement>(null);
   
@@ -412,7 +413,7 @@ export function PersonaBuilder({ onBack, onNext, language, theme }: PersonaBuild
               ${isDark ? 'bg-black/20 border-white/10' : 'bg-white/30 border-gray-200/40'}
           `}>
             <div className="flex items-center gap-4">
-              <span className={`text-xs font-bold tracking-wide uppercase drop-shadow-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{t[language].step1}</span>
+              <span className={`text-xs font-bold tracking-wide uppercase drop-shadow-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{stepOverride ? `STEP ${stepOverride}` : t[language].step1}</span>
               <CardTitle className={`text-lg font-bold drop-shadow-sm ${isDark ? 'text-white' : 'text-[#1F1F1F]'}`}>{t[language].title}</CardTitle>
             </div>
           

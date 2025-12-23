@@ -6,6 +6,7 @@ import { PersonaDetails } from './components/PersonaDetails';
 import { JobRecommendations } from './components/JobRecommendations';
 import { JobSearch } from './components/JobSearch';
 import { ResumeGeneration } from './components/ResumeGeneration';
+import { PathSelect } from './components/PathSelect';
 import { TechBackground } from './components/TechBackground';
 import { PopCat } from './components/PopCat';
 import { StepProgress } from './components/StepProgress';
@@ -13,14 +14,17 @@ import { AppProvider } from './context/AppContext';
 import { ErrorBoundary } from './components/ErrorBoundary';
 
 // Define the steps of the application flow
-type Step = 'landing' | 'builder' | 'details' | 'recommendations' | 'search' | 'generation';
+type Step = 'landing' | 'path' | 'builder' | 'details' | 'recommendations' | 'search' | 'generation';
 type Theme = 'light' | 'dark';
+type PathMode = 'direct' | 'guided' | null;
 
 export default function App() {
   const [step, setStep] = useState<Step>('landing');
   const [selectedJob, setSelectedJob] = useState<string>('');
   const [language, setLanguage] = useState<'zh' | 'en'>('zh');
   const [theme, setTheme] = useState<Theme>('light');
+  const [pathMode, setPathMode] = useState<PathMode>(null);
+  const [builderMode, setBuilderMode] = useState<PathMode>(null);
 
   const toggleLanguage = () => {
     setLanguage(prev => prev === 'zh' ? 'en' : 'zh');
@@ -32,6 +36,14 @@ export default function App() {
 
   // Step Calculation Logic
   const getStepNumber = (s: Step) => {
+      if (pathMode === 'direct') {
+        switch (s) {
+          case 'search': return 1;
+          case 'builder': return 2;
+          case 'generation': return 3;
+          default: return 0;
+        }
+      }
       switch(s) {
           case 'builder': return 1;
           case 'details': return 1; // Part of builder flow
@@ -44,19 +56,45 @@ export default function App() {
 
   const currentStepNumber = getStepNumber(step);
   const isDark = theme === 'dark';
+  const progressSteps = pathMode === 'direct'
+    ? [
+        { id: 1, label: "SEARCH", fullLabel: "TARGET SEARCH" },
+        { id: 2, label: "INIT", fullLabel: "PERSONA BUILDER" },
+        { id: 3, label: "GENERATE", fullLabel: "RESUME COMPILE" },
+      ]
+    : [
+        { id: 1, label: "INIT", fullLabel: "PERSONA BUILDER" },
+        { id: 2, label: "ANALYSIS", fullLabel: "JOB ANALYSIS" },
+        { id: 3, label: "SEARCH", fullLabel: "MARKET SCAN" },
+        { id: 4, label: "GENERATE", fullLabel: "RESUME COMPILE" },
+      ];
 
   // Navigation handlers
-  const handleStart = () => setStep('builder');
+  const handleStart = () => setStep('path');
   
   const handleBackToLanding = () => {
     setStep('landing');
+    setPathMode(null);
+    setBuilderMode(null);
     // 可选：清空所有数据以重新开始
     // 如果用户想保留数据，注释掉下面这行
     // setSelectedJob('');
   };
   
-  const handleBuilderBack = () => setStep('landing');
-  const handleBuilderNext = () => setStep('recommendations'); // Go to Step 2
+  const handleBuilderBack = () => {
+    if (builderMode === 'direct') {
+      setStep('search');
+      return;
+    }
+    setStep('landing');
+  };
+  const handleBuilderNext = () => {
+    if (builderMode === 'direct') {
+      setStep('generation');
+      return;
+    }
+    setStep('recommendations'); // Go to Step 2
+  };
 
   // const handleDetailsBack = () => setStep('builder'); // Merged into builder
   // const handleDetailsNext = () => setStep('recommendations'); // Merged into builder
@@ -69,14 +107,35 @@ export default function App() {
     setStep('search');
   };
   
-  const handleSearchBack = () => setStep('recommendations');
-  const handleSearchNext = () => setStep('generation'); // Go to Step 4
+  const handleSearchBack = () => {
+    if (pathMode === 'direct') {
+      setStep('path');
+      return;
+    }
+    setStep('recommendations');
+  };
+  const handleSearchNext = () => {
+    if (pathMode === 'direct') {
+      setBuilderMode('direct');
+      setStep('builder');
+      return;
+    }
+    setStep('generation'); // Go to Step 4
+  };
   
-  const handleGenerationBack = () => setStep('search');
+  const handleGenerationBack = () => {
+    if (pathMode === 'direct') {
+      setStep('builder');
+      return;
+    }
+    setStep('search');
+  };
   const handleGenerationNext = () => {
     // End of flow, maybe reset
     setStep('landing');
     setSelectedJob('');
+    setPathMode(null);
+    setBuilderMode(null);
   };
 
   // Enhanced transition config for "Silky Smooth" feel
@@ -141,6 +200,34 @@ export default function App() {
               </motion.div>
             )}
 
+            {step === 'path' && (
+              <motion.div
+                key="path"
+                variants={pageVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                transition={pageTransition}
+                className="w-full h-full pointer-events-auto"
+              >
+                <PathSelect
+                  onBack={handleBackToLanding}
+                  onChooseDirect={() => {
+                    setPathMode('direct');
+                    setBuilderMode('direct');
+                    setStep('search');
+                  }}
+                  onChooseGuided={() => {
+                    setPathMode('guided');
+                    setBuilderMode('guided');
+                    setStep('builder');
+                  }}
+                  language={language}
+                  theme={theme}
+                />
+              </motion.div>
+            )}
+
             {step === 'builder' && (
               <motion.div
                 key="builder"
@@ -156,6 +243,7 @@ export default function App() {
                     onNext={handleBuilderNext} 
                     language={language} 
                     theme={theme}
+                    stepOverride={builderMode === 'direct' ? 2 : undefined}
                 />
               </motion.div>
             )}
@@ -210,6 +298,7 @@ export default function App() {
                   initialSearchTerm={selectedJob}
                   language={language}
                   theme={theme}
+                  stepOverride={pathMode === 'direct' ? 1 : undefined}
                 />
               </motion.div>
             )}
@@ -229,6 +318,7 @@ export default function App() {
                     onNext={handleGenerationNext} 
                     language={language} 
                     theme={theme}
+                    stepOverride={pathMode === 'direct' ? 3 : undefined}
                 />
               </motion.div>
             )}
@@ -253,7 +343,7 @@ export default function App() {
                 transition={{ duration: 0.5, delay: 0.2 }}
                 className="absolute bottom-0 left-0 right-0 z-40 flex justify-center pointer-events-none"
             >
-                <StepProgress currentStep={currentStepNumber} theme={theme} />
+                <StepProgress currentStep={currentStepNumber} theme={theme} steps={progressSteps} />
             </motion.div>
         )}
       </AnimatePresence>
