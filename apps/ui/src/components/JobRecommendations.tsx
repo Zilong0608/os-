@@ -61,6 +61,8 @@ export function JobRecommendations({ onBack, onNext, onSelectJob, language, them
     
     setError('');
     setIsRecommending(true);
+    setShowResults(false);
+    setRecommendations([]);
     
     try {
       const result = await recommendRoles(profile, 10);
@@ -266,8 +268,13 @@ export function JobRecommendations({ onBack, onNext, onSelectJob, language, them
               )}
               
               <div className="flex items-center gap-3 mb-6">
-                 <Button className={`border h-8 text-xs shadow-sm ${isDark ? 'bg-white/10 border-white/10 text-white hover:bg-white/20 rounded-none' : 'bg-white border-gray-200 hover:bg-gray-50 text-gray-700 rounded-full'}`} onClick={handleStart}>
-                   {t[language].recommendAgain}
+                 <Button
+                   className={`border h-8 text-xs shadow-sm ${isDark ? 'bg-white/10 border-white/10 text-white hover:bg-white/20 rounded-none' : 'bg-white border-gray-200 hover:bg-gray-50 text-gray-700 rounded-full'}`}
+                   onClick={handleStart}
+                   disabled={isRecommending}
+                 >
+                   {isRecommending && <Loader2 className="w-3 h-3 mr-2 animate-spin" />}
+                   {isRecommending ? t[language].analyzing : t[language].recommendAgain}
                  </Button>
                  <span className={`text-sm flex items-center gap-1 font-medium px-3 py-1 border ${isDark ? 'bg-white/5 border-white/10 text-gray-300 rounded-none' : 'bg-gray-100 border-gray-200 text-gray-800 rounded-full'}`}>
                     {t[language].done} <Check className="w-3 h-3" />
