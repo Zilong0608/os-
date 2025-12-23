@@ -577,7 +577,95 @@ ROLE_RULES: List[Tuple[str, List[str], int]] = [
             "渗透",
         ],
         2,
+    ),    (
+        "Machine Learning Engineer",
+        [
+            "machine learning",
+            "ml",
+            "model",
+            "python",
+            "tensorflow",
+            "pytorch",
+            "scikit",
+        ],
+        2,
     ),
+    (
+        "AI Engineer",
+        [
+            "ai",
+            "artificial intelligence",
+            "llm",
+            "rag",
+            "embedding",
+            "vector",
+            "prompt",
+        ],
+        2,
+    ),
+    (
+        "Quality Assurance Engineer",
+        [
+            "qa",
+            "testing",
+            "automation",
+            "test case",
+            "selenium",
+            "cypress",
+            "playwright",
+        ],
+        2,
+    ),
+    (
+        "DevOps Engineer",
+        [
+            "devops",
+            "ci",
+            "cd",
+            "docker",
+            "kubernetes",
+            "terraform",
+            "ansible",
+        ],
+        2,
+    ),
+    (
+        "Network Engineer",
+        [
+            "network",
+            "routing",
+            "switching",
+            "tcp/ip",
+            "firewall",
+            "vpn",
+        ],
+        2,
+    ),
+    (
+        "Cybersecurity Engineer",
+        [
+            "cybersecurity",
+            "security",
+            "siem",
+            "soc",
+            "incident",
+            "threat",
+        ],
+        2,
+    ),
+    (
+        "Cloud & Application Security",
+        [
+            "cloud security",
+            "appsec",
+            "owasp",
+            "iam",
+            "zero trust",
+            "security",
+        ],
+        2,
+    ),
+
 ]
 
 

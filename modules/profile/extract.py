@@ -100,7 +100,7 @@ TECH_TOKENS = [
 def _guess_skills(text: str) -> list[str]:
     # Prefer explicit Skills: section; otherwise only use known tokens
     parts: list[str] = []
-    m = re.search(r"(?i)skills?\s*[:：]\s*(.+)$", text or "", flags=re.M)
+    m = re.search(r"(?i)skills?\s*[:\uff1a]\s*(.+)$", text or "", flags=re.M)
     if m:
         line = m.group(1)
         parts.extend([s.strip() for s in re.split(SKILL_SEP, line) if s and len(s.strip()) > 1])
@@ -153,14 +153,89 @@ def parse_profile_rule_based(text: str) -> Profile:
     name = None
     contact = None
     location = None
+    summary = None
     skills: list[str] = []
     education: list[Education] = []
     experience: list[Experience] = []
     projects: list[Experience] = []
     courses: list[Course] = []
 
+    lines = list(_lines(text))
+
+    def _is_header(line: str) -> bool:
+        up = (line or "").strip().upper()
+        return up in {
+            "PROFILE",
+            "SUMMARY",
+            "PROFESSIONAL SUMMARY",
+            "SKILLS",
+            "TECHNICAL SKILLS",
+            "TECH STACK",
+            "EDUCATION",
+            "EXPERIENCE",
+            "WORK EXPERIENCE",
+            "PROJECT EXPERIENCE",
+            "PROJECTS",
+        }
+
+    def _section_after(idx: int) -> list[str]:
+        out: list[str] = []
+        for j in range(idx + 1, len(lines)):
+            if _is_header(lines[j]):
+                break
+            out.append(lines[j])
+        return out
+
+    # Prefer explicit summary/profile section
+    for i, ln in enumerate(lines):
+        if ln.strip().upper() in {"PROFILE", "SUMMARY", "PROFESSIONAL SUMMARY"}:
+            section = _section_after(i)
+            if section:
+                summary = " ".join(section).strip()
+            break
+
+    # Prefer explicit skills section
+    for i, ln in enumerate(lines):
+        if ln.strip().upper() in {"SKILLS", "TECHNICAL SKILLS", "TECH STACK"}:
+            section = _section_after(i)
+            for row in section:
+                if ":" in row:
+                    row = row.split(":", 1)[1]
+                parts = [s.strip() for s in re.split(SKILL_SEP, row) if s and len(s.strip()) > 1]
+                skills.extend(parts)
+            break
+
+
+    # Prefer explicit education section
+    for i, ln in enumerate(lines):
+        if ln.strip().upper() == "EDUCATION":
+            section = _section_after(i)
+            for row in section:
+                if re.search(r"(?i)degree|bachelor|master|phd|university|college|school", row):
+                    education.append(Education(school=row.strip()))
+                elif row and len(row) <= 120:
+                    education.append(Education(school=row.strip()))
+            break
+
+    # Prefer explicit projects section
+    for i, ln in enumerate(lines):
+        if ln.strip().upper() in {"PROJECTS", "PROJECT EXPERIENCE"}:
+            section = _section_after(i)
+            current_title = None
+            bullets: list[str] = []
+            for row in section:
+                if row.startswith(("-", "?", "*")):
+                    bullets.append(row.lstrip("-?* ").strip())
+                    continue
+                if current_title or bullets:
+                    projects.append(Experience(company=current_title or "Projects", bullets=bullets[:12]))
+                current_title = row.strip()
+                bullets = []
+            if current_title or bullets:
+                projects.append(Experience(company=current_title or "Projects", bullets=bullets[:12]))
+            break
     # Very light heuristics
-    for i, ln in enumerate(_lines(text)):
+    for i, ln in enumerate(lines):
         low = ln.lower()
         if i == 0 and len(ln.split()) <= 6 and not name:
             name = ln
@@ -199,12 +274,21 @@ def parse_profile_rule_based(text: str) -> Profile:
                 courses.append(Course(code=code, name=None, topics=[], skills=[], tools=[]))
 
     # skills
-    skills = _guess_skills(text)
+    merged_skills = _guess_skills(text) + skills
+    seen = set()
+    skills = []
+    for s in merged_skills:
+        key = (s or "").strip().lower()
+        if not key or key in seen:
+            continue
+        seen.add(key)
+        skills.append(s)
 
     return Profile(
         name=name,
         contact=contact,
         location=location,
+        summary=summary,
         education=education,
         experience=experience,
         projects=projects,
@@ -217,7 +301,7 @@ def _shrink_text(text: str, max_len: int = 8000) -> str:
     if len(text) <= max_len:
         return text
     # Prefer lines containing key headers
-    keys = re.compile(r"(?i)education|experience|project|skill|course|summary|profile|work|employment|intern|语言|教育|经历|项目|技能")
+    keys = re.compile(r"(?i)education|experience|project|skill|course|summary|profile|work|employment|intern|language|education|experience|project|skills")
     lines = text.splitlines()
     picked: list[str] = []
     for ln in lines:

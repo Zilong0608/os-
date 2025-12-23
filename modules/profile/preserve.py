@@ -39,7 +39,7 @@ def parse_resume_docx(file: UploadFile) -> Tuple[dict, str]:
             return None
         # Normalize separators
         norm = re.sub(r"[\u2012\u2013\u2014\u2015]", "-", text)  # dashes -> '-'
-        norm = norm.replace("–", "-")
+        norm = norm.replace("�?, "-")
         # 1) YYYY - YYYY/Present
         m = re.search(r"\b(\d{4})\b\s*[-~–—to至到]{1,2}\s*(\d{4}|Present|Current)\b", norm, flags=re.I)
         if m:
@@ -104,7 +104,7 @@ def parse_resume_docx(file: UploadFile) -> Tuple[dict, str]:
 
     def _company_role_header(s: str) -> tuple[str | None, str | None]:
         """Split "Company - Role" like headers; ensure left is not date-like."""
-        # Prefer separators: ' - ', ' — ', ' – ', ' | ', ': '
+        # Prefer separators: ' - ', ' �?', ' �?', ' | ', ': '
         parts = re.split(r"\s+[\-—–|:]\s+", s)
         if len(parts) >= 2:
             left, right = parts[0].strip(), parts[1].strip()
@@ -202,7 +202,7 @@ def parse_resume_docx(file: UploadFile) -> Tuple[dict, str]:
         'education': ['education'],
         'experience': ['work experience', 'experience'],
         'projects': ['projects'],
-        'skills': ['skills'],
+        'skills': ['skills', 'technical skills'],
         'certifications': ['certifications', 'certificates'],
         'languages': ['languages'],
     }
@@ -210,7 +210,7 @@ def parse_resume_docx(file: UploadFile) -> Tuple[dict, str]:
     def _normalize_header(s: str) -> str:
         # remove bullets, punctuation and collapse spaces
         s = re.sub(r"^[\-•·\*—–\s]+", "", s or "")
-        s = s.strip().strip(':：;').lower()
+        s = s.strip().strip(':�?').lower()
         s = re.sub(r"\s+", " ", s)
         return s
 
@@ -225,7 +225,7 @@ def parse_resume_docx(file: UploadFile) -> Tuple[dict, str]:
     current = None
     bucket: dict[str, List[str]] = {k: [] for k in sections.keys()}
 
-    header_re = re.compile(r"^(?P<h>education|work\s+experience|experience|projects|skills|certifications|certificates|languages)\s*[:：]?\s*(?P<rest>.*)$", re.I)
+        header_re = re.compile(r"^(?P<h>education|work\s+experience|experience|projects|technical\s+skills|skills|certifications|certificates|languages)\s*[:��]?\s*(?P<rest>.*)$", re.I)
     for t in all_lines:
         tt = (t or '').strip()
         if not tt:
@@ -488,7 +488,7 @@ def parse_resume_text_preserve(text: str) -> Tuple[dict, str]:
 
     def _normalize_header(s: str) -> str:
         s = re.sub(r"^[\-•·\*—–\s]+", "", s or "")
-        s = s.strip().strip(':：;').lower()
+        s = s.strip().strip(':�?').lower()
         s = re.sub(r"\s+", " ", s)
         return s
 
@@ -496,7 +496,7 @@ def parse_resume_text_preserve(text: str) -> Tuple[dict, str]:
         'education': ['education'],
         'experience': ['work experience', 'experience'],
         'projects': ['projects'],
-        'skills': ['skills'],
+        'skills': ['skills', 'technical skills'],
         'certifications': ['certifications', 'certificates'],
         'languages': ['languages'],
     }
@@ -544,7 +544,7 @@ def parse_resume_text_preserve(text: str) -> Tuple[dict, str]:
         if not text:
             return None
         norm = re.sub(r"[\u2012\u2013\u2014\u2015]", "-", text)
-        norm = norm.replace("–", "-")
+        norm = norm.replace("�?, "-")
         m = re.search(r"\b(\d{4})\b\s*[-~–—to至到]{1,2}\s*(\d{4}|Present|Current)\b", norm, flags=re.I)
         if m:
             a, b = m.group(1), m.group(2)

@@ -25,7 +25,14 @@ from jobspy import scrape_jobs
 def _hash_key(title: str, company: str, location: str, url: str) -> str:
     import hashlib
 
-    key = f"{title.strip().lower()}|{company.strip().lower()}|{(location or '').strip().lower()}|{(url or '').strip().lower()}"
+    def norm(value: object) -> str:
+        if value is None:
+            return ""
+        if isinstance(value, float) and math.isnan(value):
+            return ""
+        return str(value).strip().lower()
+
+    key = f"{norm(title)}|{norm(company)}|{norm(location)}|{norm(url)}"
     return hashlib.sha1(key.encode("utf-8")).hexdigest()
 
 

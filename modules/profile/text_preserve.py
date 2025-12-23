@@ -33,7 +33,7 @@ def parse_text_preserve(text: str) -> Tuple[Dict[str, Any], str]:
         "education": {"education"},
         "experience": {"experience", "work experience", "employment history"},
         "projects": {"projects", "project"},
-        "skills": {"skills", "skill"},
+        "skills": {"skills", "skill", "technical skills"},
         "languages": {"languages", "language"},
         "certifications": {"certifications", "certificates"},
     }
@@ -49,7 +49,7 @@ def parse_text_preserve(text: str) -> Tuple[Dict[str, Any], str]:
     bucket: Dict[str, List[str]] = {k: [] for k in hdr_alias}
     preamble: List[str] = []
     current: str | None = None
-    header_re = re.compile(r"^(?P<h>education|experience|work\s+experience|employment\s+history|projects|skills|languages|certifications|certificates)\s*[:：]?\s*(?P<rest>.*)$", re.I)
+    header_re = re.compile(r"^(?P<h>education|experience|work\s+experience|employment\s+history|projects|skills|technical\s+skills|languages|certifications|certificates)\s*[:：]?\s*(?P<rest>.*)$", re.I)
     for ln in lines:
         m = header_re.match(ln)
         if m:
@@ -478,4 +478,3 @@ def parse_text_preserve(text: str) -> Tuple[Dict[str, Any], str]:
         "languages": languages,
     }
     return profile, text or ""
-
